@@ -1,31 +1,31 @@
-export default function JoinQueuePage() {
+import { queueService } from "@/lib/queue/instance";
+import { JoinQueueForm } from "./join-queue-form";
+
+export const dynamic = "force-dynamic";
+
+export default async function JoinQueuePage() {
+  const queues = await queueService.listQueues();
+  const joinableQueues = queues.filter((q) => q.status === "ACTIVE");
+
   return (
     <div className="mx-auto max-w-md">
       <h1 className="text-2xl font-bold text-gray-900">Join a Queue</h1>
       <p className="mt-2 text-gray-600">
-        Select a clinic and department to join the queue.
+        Select a queue and enter your details to join.
       </p>
-      <div className="mt-8 space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Clinic
-          </label>
-          <select className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-            <option>Select a clinic</option>
-          </select>
+
+      {joinableQueues.length === 0 ? (
+        <div className="mt-8 rounded-lg border border-gray-200 bg-white p-6 text-center shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900">
+            No queues available
+          </h2>
+          <p className="mt-2 text-gray-500">
+            No active queues are currently accepting new patients.
+          </p>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Department
-          </label>
-          <select className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-4 py-2 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500">
-            <option>Select a department</option>
-          </select>
-        </div>
-        <button className="w-full rounded-lg bg-primary-600 px-4 py-2 text-white hover:bg-primary-700 focus-ring">
-          Continue
-        </button>
-      </div>
+      ) : (
+        <JoinQueueForm queues={joinableQueues} />
+      )}
     </div>
   );
 }
