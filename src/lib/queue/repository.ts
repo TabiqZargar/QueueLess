@@ -44,6 +44,8 @@ export interface QueueRepository {
 
   getQueueWithDetails(queueId: string): Promise<QueueWithDetails | null>;
 
+  listQueues(): Promise<QueueWithDetails[]>;
+
   getQueueEntries(queueId: string): Promise<QueueEntry[]>;
 
   getQueueEntry(entryId: string): Promise<QueueEntry | null>;

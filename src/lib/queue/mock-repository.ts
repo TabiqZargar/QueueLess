@@ -48,6 +48,16 @@ export class MockQueueRepository implements QueueRepository {
     const queue = this.queues.find((q) => q.id === queueId);
     if (!queue) return null;
 
+    return this.toWithDetails(queue);
+  }
+
+  async listQueues(): Promise<QueueWithDetails[]> {
+    return this.queues
+      .map((q) => this.toWithDetails(q))
+      .sort((a, b) => a.updatedAt.getTime() - b.updatedAt.getTime());
+  }
+
+  private toWithDetails(queue: Queue): QueueWithDetails {
     const doctor =
       this.doctors.find((d) => d.id === queue.doctorId) ?? undefined;
     const department = mockDepartments.find(

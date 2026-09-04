@@ -42,6 +42,14 @@ export class QueueService {
     return this.repository.getQueueWithDetails(queueId);
   }
 
+  async listQueues(): Promise<QueueWithDetails[]> {
+    return this.repository.listQueues();
+  }
+
+  async getQueueEntry(entryId: string): Promise<QueueEntry | null> {
+    return this.repository.getQueueEntry(entryId);
+  }
+
   async getQueueStats(queueId: string): Promise<QueueStatistics> {
     const queue = await this.repository.getQueue(queueId);
     if (!queue) {
