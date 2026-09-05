@@ -121,6 +121,8 @@ export function QueueControlsCard({
             variant="secondary"
             className="w-full"
             disabled={!isActive || pending !== null}
+            aria-expanded={showWalkIn}
+            aria-controls="walk-in-form"
             onClick={() => {
               setShowWalkIn((v) => !v);
               setFeedback(null);
@@ -131,6 +133,7 @@ export function QueueControlsCard({
 
           {showWalkIn && (
             <form
+              id="walk-in-form"
               onSubmit={handleWalkIn}
               className="mt-4 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4"
               aria-label="Add walk-in patient"
