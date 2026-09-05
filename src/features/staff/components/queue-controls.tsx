@@ -4,8 +4,10 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import type { QueueStatus } from "@/types";
-import { addWalkInAction, type ActionResult } from "../actions";
+import { addWalkInAction, pauseQueueAction, resumeQueueAction, type ActionResult } from "../actions";
 import { FeedbackMessage, type Feedback } from "@/components/feedback-message";
+
+type PendingAction = "pause" | "resume" | "walkIn" | null;
 
 interface QueueControlsCardProps {
   queueId: string;
@@ -17,11 +19,27 @@ export function QueueControlsCard({
   queueStatus,
 }: QueueControlsCardProps) {
   const router = useRouter();
-  const [pending, setPending] = useState<"walkIn" | null>(null);
+  const [pending, setPending] = useState<PendingAction>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [showWalkIn, setShowWalkIn] = useState(false);
   const [walkInName, setWalkInName] = useState("");
   const [walkInPhone, setWalkInPhone] = useState("");
+
+  async function runAction(
+    actionName: PendingAction,
+    action: () => Promise<ActionResult>
+  ) {
+    setPending(actionName);
+    setFeedback(null);
+    const result = await action();
+    setPending(null);
+    if (result.error) {
+      setFeedback({ kind: "error", text: result.error });
+      return;
+    }
+    setFeedback({ kind: "success", text: result.message ?? "Done." });
+    router.refresh();
+  }
 
   async function handleWalkIn(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -45,6 +63,7 @@ export function QueueControlsCard({
   }
 
   const isActive = queueStatus === "ACTIVE";
+  const isPaused = queueStatus === "PAUSED";
 
   return (
     <section
@@ -61,7 +80,43 @@ export function QueueControlsCard({
       </div>
 
       <div className="space-y-4 px-6 py-4">
+        {isPaused && (
+          <div className="rounded-lg border border-warning-200 bg-warning-50 px-4 py-3">
+            <p className="text-sm font-medium text-warning-800">
+              Queue is currently paused.
+            </p>
+            <p className="mt-1 text-sm text-warning-700">
+              New patients cannot join until the queue is resumed.
+            </p>
+          </div>
+        )}
+
         <div>
+          {isActive ? (
+            <Button
+              variant="secondary"
+              className="w-full"
+              disabled={pending !== null}
+              onClick={() => runAction("pause", () => pauseQueueAction(queueId))}
+            >
+              {pending === "pause" ? "Pausing..." : "Pause Queue"}
+            </Button>
+          ) : isPaused ? (
+            <Button
+              className="w-full"
+              disabled={pending !== null}
+              onClick={() => runAction("resume", () => resumeQueueAction(queueId))}
+            >
+              {pending === "resume" ? "Resuming..." : "Resume Queue"}
+            </Button>
+          ) : (
+            <p className="text-sm text-gray-500">
+              This queue is not active and cannot be modified.
+            </p>
+          )}
+        </div>
+
+        <div className="border-t border-gray-100 pt-4">
           <Button
             variant="secondary"
             className="w-full"
