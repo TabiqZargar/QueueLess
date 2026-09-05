@@ -7,6 +7,7 @@ import { QueueIdentity } from "./queue-identity";
 import { QueueStats } from "./queue-stats";
 import { CurrentPatientPanel } from "./current-patient";
 import { WaitingQueueCard } from "./waiting-queue";
+import { QueueControlsCard } from "./queue-controls";
 
 interface StaffDashboardProps {
   queues: QueueWithDetails[];
@@ -53,10 +54,13 @@ export function StaffDashboard({
 
       <QueueStats data={data} />
 
-      <CurrentPatientPanel
-        currentPatient={data.currentPatient}
-        estimatedWaitMinutes={data.stats.estimatedWaitMinutes}
-      />
+      <div className="grid gap-6 lg:grid-cols-2">
+        <CurrentPatientPanel
+          currentPatient={data.currentPatient}
+          estimatedWaitMinutes={data.stats.estimatedWaitMinutes}
+        />
+        <QueueControlsCard queueId={data.queue.id} queueStatus={data.queueStatus} />
+      </div>
 
       <WaitingQueueCard
         waitList={data.waitList}
