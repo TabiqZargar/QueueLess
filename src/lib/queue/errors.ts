@@ -53,3 +53,12 @@ export class NoPatientsWaitingError extends QueueError {
     this.name = "NoPatientsWaitingError";
   }
 }
+
+export class CannotCallNextPatientError extends QueueError {
+  constructor() {
+    super(
+      "Cannot call next patient while there is already a patient in consultation or called"
+    );
+    this.name = "CannotCallNextPatientError";
+  }
+}

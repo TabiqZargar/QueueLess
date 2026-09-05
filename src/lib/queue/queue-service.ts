@@ -3,9 +3,19 @@ import {
   QueueEntry,
   QueueEventType,
   QueuePosition,
+  EntryType,
+  QueueEntryStatus,
 } from "@/types";
 import { QueueRepository, QueueStatistics, QueueWithDetails } from "./repository";
-import { InvalidTransitionError, NoPatientsWaitingError, QueueEntryNotFoundError, QueueNotFoundError, QueueNotActiveError, QueuePausedError } from "./errors";
+import {
+  CannotCallNextPatientError,
+  InvalidTransitionError,
+  NoPatientsWaitingError,
+  QueueEntryNotFoundError,
+  QueueNotFoundError,
+  QueueNotActiveError,
+  QueuePausedError,
+} from "./errors";
 import {
   canTransition,
   canTransitionQueueStatus,
@@ -33,6 +43,37 @@ export interface QueueJoinResult {
 export interface QueueActionResult {
   entry: QueueEntry;
   event: QueueEventType;
+}
+
+export interface QueueStatusCounts {
+  waiting: number;
+  called: number;
+  inConsultation: number;
+  completed: number;
+  noShow: number;
+  cancelled: number;
+}
+
+export interface StaffWaitListEntry {
+  entryId: string;
+  queueId: string;
+  patientId: string;
+  patientName: string;
+  tokenNumber: number;
+  entryType: EntryType;
+  status: QueueEntryStatus;
+  joinedAt: Date;
+  position: number;
+  patientsAhead: number;
+  estimatedWaitMinutes: number;
+}
+
+export interface StaffCurrentPatient {
+  entryId: string;
+  tokenNumber: number;
+  status: QueueEntryStatus;
+  patientName: string;
+  entryType: EntryType;
 }
 
 export class QueueService {
@@ -125,6 +166,121 @@ export class QueueService {
     };
   }
 
+  async getQueueStatusCounts(queueId: string): Promise<QueueStatusCounts> {
+    const queue = await this.repository.getQueue(queueId);
+    if (!queue) {
+      throw new QueueNotFoundError(queueId);
+    }
+
+    const entries = await this.repository.getQueueEntries(queueId);
+    const counts: QueueStatusCounts = {
+      waiting: 0,
+      called: 0,
+      inConsultation: 0,
+      completed: 0,
+      noShow: 0,
+      cancelled: 0,
+    };
+
+    for (const entry of entries) {
+      switch (entry.status) {
+        case "WAITING":
+          counts.waiting++;
+          break;
+        case "CALLED":
+          counts.called++;
+          break;
+        case "IN_CONSULTATION":
+          counts.inConsultation++;
+          break;
+        case "COMPLETED":
+          counts.completed++;
+          break;
+        case "NO_SHOW":
+          counts.noShow++;
+          break;
+        case "CANCELLED":
+          counts.cancelled++;
+          break;
+        default:
+          break;
+      }
+    }
+
+    return counts;
+  }
+
+  async getCurrentActiveEntry(
+    queueId: string
+  ): Promise<StaffCurrentPatient | null> {
+    const queue = await this.repository.getQueue(queueId);
+    if (!queue) {
+      throw new QueueNotFoundError(queueId);
+    }
+
+    const entries = await this.repository.getQueueEntries(queueId);
+    const active = entries
+      .filter(
+        (e) => e.status === "CALLED" || e.status === "IN_CONSULTATION"
+      )
+      .sort((a, b) => a.tokenNumber - b.tokenNumber);
+
+    const entry = active[0];
+    if (!entry) {
+      return null;
+    }
+
+    const patient = await this.repository.getPatient(entry.patientId);
+    return {
+      entryId: entry.id,
+      tokenNumber: entry.tokenNumber,
+      status: entry.status,
+      patientName: patient?.name ?? "Unknown patient",
+      entryType: entry.entryType,
+    };
+  }
+
+  async getWaitList(queueId: string): Promise<StaffWaitListEntry[]> {
+    const queue = await this.repository.getQueue(queueId);
+    if (!queue) {
+      throw new QueueNotFoundError(queueId);
+    }
+
+    const entries = await this.repository.getQueueEntries(queueId);
+    const waiting = entries
+      .filter((e) => e.status === "WAITING")
+      .sort((a, b) => a.tokenNumber - b.tokenNumber);
+
+    const average = await this.getQueueAverageConsultationMinutes(queueId);
+
+    const list: StaffWaitListEntry[] = [];
+    for (const entry of waiting) {
+      const patient = await this.repository.getPatient(entry.patientId);
+      const patientsAhead = Math.max(
+        countPatientsAhead(entries, entry.id),
+        0
+      );
+      list.push({
+        entryId: entry.id,
+        queueId: entry.queueId,
+        patientId: entry.patientId,
+        patientName: patient?.name ?? "Unknown patient",
+        tokenNumber: entry.tokenNumber,
+        entryType: entry.entryType,
+        status: entry.status,
+        joinedAt: entry.joinedAt,
+        position: patientsAhead + 1,
+        patientsAhead,
+        estimatedWaitMinutes: calculateEstimatedWait(
+          patientsAhead,
+          average
+        ),
+      });
+    }
+
+    return list;
+  }
+
   async callNextPatient(queueId: string): Promise<QueueEntry> {
     const queue = await this.repository.getQueue(queueId);
     if (!queue) {
@@ -145,9 +301,7 @@ export class QueueService {
     );
 
     if (hasActiveConsultation) {
-      throw new Error(
-        "Cannot call next patient while there is already a patient in consultation or called"
-      );
+      throw new CannotCallNextPatientError();
     }
 
     const next = await this.repository.getNextWaitingEntry(queueId);

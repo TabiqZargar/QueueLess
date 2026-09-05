@@ -2,6 +2,10 @@ export function formatToken(tokenNumber: number): string {
   return `#${tokenNumber.toString().padStart(3, "0")}`;
 }
 
+export function formatQueueToken(tokenNumber: number): string {
+  return `A-${tokenNumber}`;
+}
+
 export function formatWaitTime(minutes: number): string {
   if (minutes < 1) {
     return "Less than a minute";
