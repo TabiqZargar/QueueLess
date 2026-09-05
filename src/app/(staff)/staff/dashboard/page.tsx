@@ -21,7 +21,9 @@ export default async function StaffDashboardPage({
     (requestedQueueId &&
       queues.some((q) => q.id === requestedQueueId) &&
       requestedQueueId) ||
-    queues.find((q) => q.status === "ACTIVE")?.id ||
+    [...queues]
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .find((q) => q.status === "ACTIVE")?.id ||
     queues[0]?.id ||
     "";
 
