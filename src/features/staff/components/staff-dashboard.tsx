@@ -5,6 +5,8 @@ import type { StaffDashboardData } from "../get-staff-data";
 import { QueueSelector } from "./queue-selector";
 import { QueueIdentity } from "./queue-identity";
 import { QueueStats } from "./queue-stats";
+import { CurrentPatientPanel } from "./current-patient";
+import { WaitingQueueCard } from "./waiting-queue";
 
 interface StaffDashboardProps {
   queues: QueueWithDetails[];
@@ -50,6 +52,17 @@ export function StaffDashboard({
       <QueueIdentity queue={data.queue} />
 
       <QueueStats data={data} />
+
+      <CurrentPatientPanel
+        currentPatient={data.currentPatient}
+        estimatedWaitMinutes={data.stats.estimatedWaitMinutes}
+      />
+
+      <WaitingQueueCard
+        waitList={data.waitList}
+        queueId={data.queue.id}
+        queueActive={data.queueStatus === "ACTIVE"}
+      />
     </div>
   );
 }
