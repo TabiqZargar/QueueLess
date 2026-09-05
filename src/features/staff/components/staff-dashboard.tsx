@@ -8,6 +8,7 @@ import { QueueStats } from "./queue-stats";
 import { CurrentPatientPanel } from "./current-patient";
 import { WaitingQueueCard } from "./waiting-queue";
 import { QueueControlsCard } from "./queue-controls";
+import { QueueActivity } from "./queue-activity";
 
 interface StaffDashboardProps {
   queues: QueueWithDetails[];
@@ -67,6 +68,23 @@ export function StaffDashboard({
         queueId={data.queue.id}
         queueActive={data.queueStatus === "ACTIVE"}
       />
+
+      <section
+        className="rounded-lg border border-gray-200 bg-white shadow-sm"
+        aria-labelledby="queue-activity-heading"
+      >
+        <div className="border-b border-gray-200 px-6 py-4">
+          <h2
+            id="queue-activity-heading"
+            className="text-lg font-semibold text-gray-900"
+          >
+            Queue Activity
+          </h2>
+        </div>
+        <div className="px-6 py-4">
+          <QueueActivity items={data.activity} />
+        </div>
+      </section>
     </div>
   );
 }
