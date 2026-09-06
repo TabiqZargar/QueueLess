@@ -1,6 +1,7 @@
 import {
   Queue,
   QueueEntry,
+  QueueEvent,
   QueueEventType,
   QueuePosition,
   EntryType,
@@ -22,6 +23,7 @@ import {
 } from "./state-machine";
 import { createRealtimeEvent } from "@/lib/realtime/events";
 import type { QueueEventPublisher } from "@/lib/realtime/publisher";
+import type { NotificationEventHandler } from "@/lib/notifications/event-handler";
 import {
   calculateEstimatedWait,
   calculateQueuePosition,
@@ -83,7 +85,8 @@ export interface StaffCurrentPatient {
 export class QueueService {
   constructor(
     private repository: QueueRepository,
-    private publisher?: QueueEventPublisher
+    private publisher?: QueueEventPublisher,
+    private notificationHandler?: NotificationEventHandler
   ) {}
 
   async getQueue(queueId: string): Promise<QueueWithDetails | null> {
@@ -134,7 +137,7 @@ export class QueueService {
       joinedAt: new Date(),
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId: input.queueId,
       queueEntryId: entry.id,
       eventType: "QUEUE_JOINED",
@@ -329,7 +332,7 @@ export class QueueService {
       calledAt: new Date(),
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId,
       queueEntryId: updated.id,
       eventType: "PATIENT_CALLED",
@@ -355,7 +358,7 @@ export class QueueService {
       consultationStartedAt: new Date(),
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId: entry.queueId,
       queueEntryId: entryId,
       eventType: "CONSULTATION_STARTED",
@@ -381,7 +384,7 @@ export class QueueService {
       completedAt: new Date(),
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId: entry.queueId,
       queueEntryId: entryId,
       eventType: "CONSULTATION_COMPLETED",
@@ -406,7 +409,7 @@ export class QueueService {
       status: "NO_SHOW",
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId: entry.queueId,
       queueEntryId: entryId,
       eventType: "PATIENT_NO_SHOW",
@@ -432,7 +435,7 @@ export class QueueService {
       cancelledAt: new Date(),
     });
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId: entry.queueId,
       queueEntryId: entryId,
       eventType: "PATIENT_CANCELLED",
@@ -455,7 +458,7 @@ export class QueueService {
 
     const updated = await this.repository.updateQueueStatus(queueId, "PAUSED");
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId,
       eventType: "QUEUE_PAUSED",
     });
@@ -477,7 +480,7 @@ export class QueueService {
 
     const updated = await this.repository.updateQueueStatus(queueId, "ACTIVE");
 
-    await this.repository.addQueueEvent({
+    await this.addDomainEvent({
       queueId,
       eventType: "QUEUE_RESUMED",
     });
@@ -500,6 +503,20 @@ export class QueueService {
 
   async getQueueEvents(queueId: string) {
     return this.repository.getQueueEvents(queueId);
+  }
+
+  /**
+   * Records a domain event and forwards it to the notification handler. The
+   * event is created via the repository (the durable record of the successful
+   * mutation); the notification handler is then notified with exactly that
+   * stored event (so its id matches for deduplication). A notification/topic
+   * failure never fails or rolls back the underlying mutation.
+   */
+  private async addDomainEvent(
+    event: Omit<QueueEvent, "id" | "timestamp">
+  ): Promise<void> {
+    const stored = await this.repository.addQueueEvent(event);
+    await this.notificationHandler?.handle(stored);
   }
 
   private async publishQueueUpdated(queueId: string): Promise<void> {

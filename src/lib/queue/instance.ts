@@ -1,6 +1,7 @@
 import { QueueService } from "./queue-service";
 import { MockQueueRepository } from "./mock-repository";
 import { realtimePublisher } from "@/lib/realtime/instance";
+import { createNotificationHandler } from "@/lib/notifications/instance";
 
 /**
  * Application-wide queue service instance.
@@ -10,15 +11,18 @@ import { realtimePublisher } from "@/lib/realtime/instance";
  * persists across server requests within the running dev/production process.
  *
  * The realtime publisher is injected here (Phase 8): QueueService emits
- * best-effort realtime events after successful mutations. When the
- * PostgreSQL/Prisma repository is introduced by the database contributor, this
- * is the single place that changes:
+ * best-effort realtime events after successful mutations. The notification
+ * handler (Phase 9) converts stored domain events into patient notifications
+ * through the policy → service → delivery pipeline.
  *
- *   const repository = new PrismaQueueRepository();
- *   export const queueService = new QueueService(repository, realtimePublisher);
- *
- * No UI or feature code needs to change.
+ * When the PostgreSQL/Prisma repository is introduced by the database
+ * contributor, only repository construction changes; the notification handler
+ * is unaffected because it depends on QueueService's public API only.
  */
 const repository = new MockQueueRepository();
 
-export const queueService = new QueueService(repository, realtimePublisher);
+let queueServiceRef: QueueService;
+const notificationHandler = createNotificationHandler(() => queueServiceRef);
+queueServiceRef = new QueueService(repository, realtimePublisher, notificationHandler);
+
+export const queueService = queueServiceRef;
