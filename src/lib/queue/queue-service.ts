@@ -74,6 +74,8 @@ export interface StaffCurrentPatient {
   status: QueueEntryStatus;
   patientName: string;
   entryType: EntryType;
+  calledAt?: Date;
+  consultationStartedAt?: Date;
 }
 
 export class QueueService {
@@ -237,6 +239,8 @@ export class QueueService {
       status: entry.status,
       patientName: patient?.name ?? "Unknown patient",
       entryType: entry.entryType,
+      calledAt: entry.calledAt,
+      consultationStartedAt: entry.consultationStartedAt,
     };
   }
 
