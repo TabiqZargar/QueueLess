@@ -8,6 +8,10 @@ import {
   QueueNotFoundError,
   QueuePausedError,
 } from "./errors";
+import {
+  AuthenticationError,
+  AuthorizationError,
+} from "@/lib/auth/errors";
 
 /**
  * Result shape returned by server actions to the client UI.
@@ -22,6 +26,12 @@ export interface ActionResult {
  * Never exposes stack traces or internal error text.
  */
 export function toActionErrorMessage(err: unknown): string {
+  if (err instanceof AuthenticationError) {
+    return "Please sign in to continue.";
+  }
+  if (err instanceof AuthorizationError) {
+    return "You are not authorized to perform this action.";
+  }
   if (err instanceof CannotCallNextPatientError) {
     return "A patient is already being called or served. Complete the current operation before calling another patient.";
   }
