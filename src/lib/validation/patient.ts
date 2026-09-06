@@ -1,7 +1,8 @@
 import { z } from "zod";
+import { queueIdSchema } from "./identifiers";
 
 export const joinQueueSchema = z.object({
-  queueId: z.string().min(1, "A queue must be selected"),
+  queueId: queueIdSchema,
   name: z
     .string()
     .min(1, "Patient name is required")
