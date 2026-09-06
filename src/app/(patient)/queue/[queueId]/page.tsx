@@ -3,6 +3,7 @@ import { queueService } from "@/lib/queue/instance";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
+import { QueueRealtimeSync } from "@/components/realtime/queue-realtime-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -42,8 +43,9 @@ export default async function QueueOverviewPage({
         {queue.departmentName ?? "Queue"}
       </h1>
       <p className="mt-1 text-gray-600">{queue.doctor?.displayName}</p>
-      <div className="mt-2">
+      <div className="mt-2 flex items-center gap-3">
         <QueueStatusBadge status={status} />
+        <QueueRealtimeSync queueId={queue.id} />
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3">

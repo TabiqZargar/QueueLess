@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 import { CancelQueueButton } from "@/features/patients/cancel-queue-button";
+import { QueueRealtimeSync } from "@/components/realtime/queue-realtime-sync";
 
 export const dynamic = "force-dynamic";
 
@@ -93,6 +94,7 @@ export default async function QueueStatusPage({
   if (data.entryStatus === "CALLED") {
     return (
       <EntryState queueId={params.queueId}>
+        <QueueRealtimeSync queueId={params.queueId} />
         <div role="status" className="text-center">
           <h2 className="text-lg font-semibold text-success-700">
             You&apos;re being called
@@ -109,6 +111,7 @@ export default async function QueueStatusPage({
   if (data.entryStatus === "IN_CONSULTATION") {
     return (
       <EntryState queueId={params.queueId}>
+        <QueueRealtimeSync queueId={params.queueId} />
         <div role="status" className="text-center">
           <h2 className="text-lg font-semibold text-primary-700">
             Consultation in progress
@@ -143,6 +146,9 @@ function StatusView({
 }) {
   return (
     <div className="mx-auto max-w-md">
+      <div className="flex justify-end">
+        <QueueRealtimeSync queueId={queueId} />
+      </div>
       <div className="text-center">
         <p className="text-sm uppercase tracking-wide text-gray-500">
           Your token

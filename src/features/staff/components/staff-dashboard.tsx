@@ -9,6 +9,8 @@ import { CurrentPatientPanel } from "./current-patient";
 import { WaitingQueueCard } from "./waiting-queue";
 import { QueueControlsCard } from "./queue-controls";
 import { QueueActivity } from "./queue-activity";
+import { useRealtimeUpdate } from "@/lib/realtime/use-realtime";
+import { RealtimeStatus } from "@/components/realtime/realtime-status";
 
 interface StaffDashboardProps {
   queues: QueueWithDetails[];
@@ -21,10 +23,15 @@ export function StaffDashboard({
   selectedQueueId,
   data,
 }: StaffDashboardProps) {
+  const realtimeStatus = useRealtimeUpdate(selectedQueueId || null);
+
   if (!data) {
     return (
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+          <RealtimeStatus status={realtimeStatus} />
+        </div>
         <p className="mt-2 text-gray-600">
           {queues.length === 0
             ? "No queues have been created yet."
@@ -43,7 +50,10 @@ export function StaffDashboard({
     <div className="space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+            <RealtimeStatus status={realtimeStatus} />
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             Operate the queue, manage patients, and track activity.
           </p>

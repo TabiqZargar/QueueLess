@@ -7,6 +7,8 @@ import { CurrentPatientCard } from "./current-patient";
 import { UpcomingPatients } from "./upcoming-patients";
 import { QueueSummary } from "./queue-summary";
 import type { DoctorDashboardData } from "../get-doctor-data";
+import { useRealtimeUpdate } from "@/lib/realtime/use-realtime";
+import { RealtimeStatus } from "@/components/realtime/realtime-status";
 
 interface DoctorDashboardProps {
   queues: QueueWithDetails[];
@@ -22,6 +24,7 @@ export function DoctorDashboard({
   data,
 }: DoctorDashboardProps) {
   const router = useRouter();
+  const realtimeStatus = useRealtimeUpdate(selectedQueueId || null);
 
   function handleQueueChange(e: React.ChangeEvent<HTMLSelectElement>) {
     router.push(`/doctor/dashboard?queue=${e.target.value}`);
@@ -37,7 +40,10 @@ export function DoctorDashboard({
     <div className="space-y-6">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Doctor Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-gray-900">Doctor Dashboard</h1>
+            <RealtimeStatus status={realtimeStatus} />
+          </div>
           <p className="mt-1 text-sm text-gray-600">
             Who am I serving? Who is next?
           </p>
