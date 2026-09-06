@@ -20,6 +20,8 @@ import {
   canTransition,
   canTransitionQueueStatus,
 } from "./state-machine";
+import { createRealtimeEvent } from "@/lib/realtime/events";
+import type { QueueEventPublisher } from "@/lib/realtime/publisher";
 import {
   calculateEstimatedWait,
   calculateQueuePosition,
@@ -79,7 +81,10 @@ export interface StaffCurrentPatient {
 }
 
 export class QueueService {
-  constructor(private repository: QueueRepository) {}
+  constructor(
+    private repository: QueueRepository,
+    private publisher?: QueueEventPublisher
+  ) {}
 
   async getQueue(queueId: string): Promise<QueueWithDetails | null> {
     return this.repository.getQueueWithDetails(queueId);
@@ -91,6 +96,10 @@ export class QueueService {
 
   async getQueueEntry(entryId: string): Promise<QueueEntry | null> {
     return this.repository.getQueueEntry(entryId);
+  }
+
+  async getQueueEntries(queueId: string): Promise<QueueEntry[]> {
+    return this.repository.getQueueEntries(queueId);
   }
 
   async getQueueStats(queueId: string): Promise<QueueStatistics> {
@@ -137,6 +146,8 @@ export class QueueService {
       position.patientsAhead,
       average
     );
+
+    await this.publishQueueUpdated(input.queueId);
 
     return { entry, position: position.position, estimatedWaitMinutes };
   }
@@ -324,6 +335,8 @@ export class QueueService {
       eventType: "PATIENT_CALLED",
     });
 
+    await this.publishQueueUpdated(queueId);
+
     return updated;
   }
 
@@ -347,6 +360,8 @@ export class QueueService {
       queueEntryId: entryId,
       eventType: "CONSULTATION_STARTED",
     });
+
+    await this.publishQueueEntryUpdated(entry.queueId, entryId);
 
     return updated;
   }
@@ -372,6 +387,8 @@ export class QueueService {
       eventType: "CONSULTATION_COMPLETED",
     });
 
+    await this.publishQueueEntryUpdated(entry.queueId, entryId);
+
     return updated;
   }
 
@@ -394,6 +411,8 @@ export class QueueService {
       queueEntryId: entryId,
       eventType: "PATIENT_NO_SHOW",
     });
+
+    await this.publishQueueEntryUpdated(entry.queueId, entryId);
 
     return updated;
   }
@@ -419,6 +438,8 @@ export class QueueService {
       eventType: "PATIENT_CANCELLED",
     });
 
+    await this.publishQueueUpdated(entry.queueId);
+
     return updated;
   }
 
@@ -438,6 +459,8 @@ export class QueueService {
       queueId,
       eventType: "QUEUE_PAUSED",
     });
+
+    await this.publishQueueStatusChanged(queueId);
 
     return updated;
   }
@@ -459,6 +482,8 @@ export class QueueService {
       eventType: "QUEUE_RESUMED",
     });
 
+    await this.publishQueueStatusChanged(queueId);
+
     return updated;
   }
 
@@ -475,6 +500,30 @@ export class QueueService {
 
   async getQueueEvents(queueId: string) {
     return this.repository.getQueueEvents(queueId);
+  }
+
+  private async publishQueueUpdated(queueId: string): Promise<void> {
+    await this.publisher?.publish(
+      queueId,
+      createRealtimeEvent({ type: "QUEUE_UPDATED", queueId })
+    );
+  }
+
+  private async publishQueueEntryUpdated(
+    queueId: string,
+    entryId: string
+  ): Promise<void> {
+    await this.publisher?.publish(
+      queueId,
+      createRealtimeEvent({ type: "QUEUE_ENTRY_UPDATED", queueId, entryId })
+    );
+  }
+
+  private async publishQueueStatusChanged(queueId: string): Promise<void> {
+    await this.publisher?.publish(
+      queueId,
+      createRealtimeEvent({ type: "QUEUE_STATUS_CHANGED", queueId })
+    );
   }
 
   private async getNextTokenNumber(queueId: string): Promise<number> {
