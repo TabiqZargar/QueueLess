@@ -1,10 +1,20 @@
 import Link from "next/link";
+import { guardPage } from "@/lib/auth/page-guard";
+import { USER_ROLES } from "@/lib/auth/roles";
+import { Forbidden } from "@/components/forbidden";
+import { SessionNav } from "@/components/session/session-nav";
 
-export default function StaffLayout({
+export default async function StaffLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const guard = await guardPage([USER_ROLES.STAFF], "/staff/dashboard");
+
+  if (guard.status === "forbidden") {
+    return <Forbidden />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
@@ -12,9 +22,12 @@ export default function StaffLayout({
           <Link href="/" className="text-xl font-bold text-gray-900">
             QueueLess
           </Link>
-          <span className="text-sm font-medium text-gray-500">
-            Staff Operations
-          </span>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-gray-500">
+              Staff Operations
+            </span>
+            <SessionNav />
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
