@@ -30,11 +30,13 @@ export function QueueSummary({ counts }: QueueSummaryProps) {
       </div>
       <dl className="grid grid-cols-3 divide-x divide-gray-100">
         {items.map((item) => (
-          <div key={item.label} className="px-4 py-6 text-center">
-            <dd className="text-2xl font-bold text-gray-900">{item.value}</dd>
-            <dt className="mt-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+          <div key={item.label} className="flex flex-col px-4 py-6 text-center">
+            <dt className="order-2 mt-1 text-xs font-medium uppercase tracking-wide text-gray-500">
               {item.label}
             </dt>
+            <dd className="order-1 text-2xl font-bold text-gray-900">
+              {item.value}
+            </dd>
           </div>
         ))}
       </dl>

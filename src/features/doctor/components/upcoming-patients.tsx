@@ -43,7 +43,7 @@ export function UpcomingPatients({
           </p>
         </div>
       ) : (
-        <ul className="divide-y divide-gray-100">
+        <ol className="list-none divide-y divide-gray-100">
           {upcoming.map((entry, index) => (
             <li
               key={entry.entryId}
@@ -65,7 +65,7 @@ export function UpcomingPatients({
               </div>
             </li>
           ))}
-        </ul>
+        </ol>
       )}
     </section>
   );
