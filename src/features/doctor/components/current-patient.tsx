@@ -2,21 +2,21 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { StaffCurrentPatient } from "@/lib/queue/queue-service";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatQueueToken } from "@/lib/utils";
 import {
   completeConsultationAction,
   startConsultationAction,
+  type ActionResult,
 } from "../actions";
 import { FeedbackMessage, type Feedback } from "@/components/feedback-message";
-import type { DoctorQueueState } from "../get-doctor-data";
+import type { DoctorCurrentPatient, DoctorQueueState } from "../get-doctor-data";
 
 type PendingAction = "start" | "complete" | null;
 
 interface CurrentPatientProps {
-  currentPatient: StaffCurrentPatient | null;
+  currentPatient: DoctorCurrentPatient | null;
   queueStatus: DoctorQueueState;
 }
 
@@ -46,13 +46,13 @@ export function CurrentPatientCard({
 
   async function runAction(
     actionName: PendingAction,
-    action: () => Promise<{ message?: string; error?: string }>
+    action: () => Promise<ActionResult>
   ) {
     setPending(actionName);
     setFeedback(null);
     const result = await action();
     setPending(null);
-    if (result.error) {
+    if (!result.success) {
       setFeedback({ kind: "error", text: result.error });
       return;
     }

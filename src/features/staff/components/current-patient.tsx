@@ -37,7 +37,7 @@ export function CurrentPatientPanel({
     const result = await action();
     setPending(null);
     setConfirmingNoShow(false);
-    if (result.error) {
+    if (!result.success) {
       setFeedback({ kind: "error", text: result.error });
       return;
     }

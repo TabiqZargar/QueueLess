@@ -8,6 +8,7 @@ import {
   isLoginRole,
 } from "@/lib/auth/mock-auth";
 import { sanitizeRedirectPath } from "@/lib/auth/page-guard";
+import type { ErrorCode } from "@/lib/queue/action-error";
 
 /**
  * Development-only authentication actions. A real provider replaces these
@@ -16,6 +17,7 @@ import { sanitizeRedirectPath } from "@/lib/auth/page-guard";
 
 export interface LoginActionState {
   error?: string;
+  code?: ErrorCode;
 }
 
 const DEFAULT_HOME: Record<UserRole, string> = {
@@ -33,12 +35,12 @@ export async function loginAction(
   const rawNext = formData.get("next");
 
   if (!isLoginRole(rawRole)) {
-    return { error: "Invalid sign-in option." };
+    return { error: "Invalid sign-in option.", code: "VALIDATION_ERROR" };
   }
 
   const user = getMockUserByLoginRole(rawRole);
   if (!user) {
-    return { error: "Unable to sign in with the selected option." };
+    return { error: "Unable to sign in with the selected option.", code: "VALIDATION_ERROR" };
   }
 
   await createSession(user.id);

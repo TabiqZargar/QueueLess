@@ -43,7 +43,7 @@ export function WaitingQueueCard({
     setConfirming(null);
     const result = await action();
     setPending(null);
-    if (result.error) {
+    if (!result.success) {
       setFeedback({ kind: "error", text: result.error });
       return;
     }

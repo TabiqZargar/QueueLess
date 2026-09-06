@@ -33,7 +33,7 @@ export function QueueControlsCard({
     setFeedback(null);
     const result = await action();
     setPending(null);
-    if (result.error) {
+    if (!result.success) {
       setFeedback({ kind: "error", text: result.error });
       return;
     }
@@ -51,7 +51,7 @@ export function QueueControlsCard({
       phone: walkInPhone || undefined,
     });
     setPending(null);
-    if (result.error) {
+    if (!result.success) {
       setFeedback({ kind: "error", text: result.error });
       return;
     }

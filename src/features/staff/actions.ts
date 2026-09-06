@@ -3,25 +3,47 @@
 import { queueService } from "@/lib/queue/instance";
 import { getPatientStore } from "@/features/patients/patient-store";
 import { addWalkInSchema } from "@/lib/validation/staff";
+import { entryIdSchema, queueIdSchema } from "@/lib/validation/identifiers";
 import { formatQueueToken } from "@/lib/utils";
 import { requireRole } from "@/lib/auth/authorization";
 import { USER_ROLES } from "@/lib/auth/roles";
 import {
   ActionResult,
-  toActionErrorMessage,
+  toActionResultError,
 } from "@/lib/queue/action-error";
 
 export type { ActionResult };
+
+/**
+ * Staff queue operations. Every action follows the same server-entry
+ * contract: authenticate, authorize, validate, invoke the queue service,
+ * convert domain errors, return a typed result. No queue business logic
+ * (transition rules, positions, ETAs) lives here - QueueService is the
+ * single authoritative engine.
+ */
 
 export async function callNextPatientAction(
   queueId: string
 ): Promise<ActionResult> {
   try {
     await requireRole(USER_ROLES.STAFF);
-    const called = await queueService.callNextPatient(queueId);
-    return { message: `Patient ${formatQueueToken(called.tokenNumber)} called.` };
+
+    const parsed = queueIdSchema.safeParse(queueId);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid queue identifier.",
+      };
+    }
+
+    const called = await queueService.callNextPatient(parsed.data);
+    return {
+      success: true,
+      message: `Patient ${formatQueueToken(called.tokenNumber)} called.`,
+    };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }
 
@@ -30,12 +52,23 @@ export async function markNoShowAction(
 ): Promise<ActionResult> {
   try {
     await requireRole(USER_ROLES.STAFF);
-    const marked = await queueService.markNoShow(entryId);
+
+    const parsed = entryIdSchema.safeParse(entryId);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid queue entry identifier.",
+      };
+    }
+
+    const marked = await queueService.markNoShow(parsed.data);
     return {
+      success: true,
       message: `Patient ${formatQueueToken(marked.tokenNumber)} marked as no-show.`,
     };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }
 
@@ -44,12 +77,23 @@ export async function cancelEntryAction(
 ): Promise<ActionResult> {
   try {
     await requireRole(USER_ROLES.STAFF);
-    const cancelled = await queueService.cancelQueueEntry(entryId);
+
+    const parsed = entryIdSchema.safeParse(entryId);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid queue entry identifier.",
+      };
+    }
+
+    const cancelled = await queueService.cancelQueueEntry(parsed.data);
     return {
+      success: true,
       message: `Entry ${formatQueueToken(cancelled.tokenNumber)} cancelled.`,
     };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }
 
@@ -58,16 +102,25 @@ export async function addWalkInAction(input: {
   name: string;
   phone?: string;
 }): Promise<ActionResult> {
-  const parsed = addWalkInSchema.safeParse(input);
-  if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid walk-in details." };
-  }
-
   try {
     await requireRole(USER_ROLES.STAFF);
+
+    const parsed = addWalkInSchema.safeParse(input);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid walk-in details.",
+      };
+    }
+
     const queue = await queueService.getQueue(parsed.data.queueId);
     if (!queue) {
-      return { error: "The queue is unavailable." };
+      return {
+        success: false,
+        code: "QUEUE_NOT_FOUND",
+        error: "The queue is unavailable.",
+      };
     }
 
     const patient = getPatientStore().registerPatient({
@@ -82,10 +135,11 @@ export async function addWalkInAction(input: {
     });
 
     return {
+      success: true,
       message: `Walk-in ${formatQueueToken(result.entry.tokenNumber)} added. Position ${result.position}. Estimated wait ${result.estimatedWaitMinutes} min.`,
     };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }
 
@@ -94,10 +148,20 @@ export async function pauseQueueAction(
 ): Promise<ActionResult> {
   try {
     await requireRole(USER_ROLES.STAFF);
-    await queueService.pauseQueue(queueId);
-    return { message: "Queue paused." };
+
+    const parsed = queueIdSchema.safeParse(queueId);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid queue identifier.",
+      };
+    }
+
+    await queueService.pauseQueue(parsed.data);
+    return { success: true, message: "Queue paused." };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }
 
@@ -106,9 +170,19 @@ export async function resumeQueueAction(
 ): Promise<ActionResult> {
   try {
     await requireRole(USER_ROLES.STAFF);
-    await queueService.resumeQueue(queueId);
-    return { message: "Queue resumed." };
+
+    const parsed = queueIdSchema.safeParse(queueId);
+    if (!parsed.success) {
+      return {
+        success: false,
+        code: "VALIDATION_ERROR",
+        error: parsed.error.issues[0]?.message ?? "Invalid queue identifier.",
+      };
+    }
+
+    await queueService.resumeQueue(parsed.data);
+    return { success: true, message: "Queue resumed." };
   } catch (err) {
-    return { error: toActionErrorMessage(err) };
+    return toActionResultError(err);
   }
 }

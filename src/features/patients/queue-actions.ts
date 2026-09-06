@@ -24,6 +24,11 @@ import {
   AuthenticationError,
   AuthorizationError,
 } from "@/lib/auth/errors";
+import {
+  ActionResult,
+  ErrorCode,
+  toActionErrorCode,
+} from "@/lib/queue/action-error";
 
 export interface JoinQueueActionResult {
   queueId: string;
@@ -34,6 +39,7 @@ export interface JoinQueueActionResult {
 
 export interface JoinQueueActionState {
   error?: string;
+  code?: ErrorCode;
   fieldErrors?: Record<string, string[]>;
   result?: JoinQueueActionResult;
 }
@@ -52,6 +58,7 @@ export async function joinQueueAction(
   if (!parsed.success) {
     return {
       error: "Please check the information you entered.",
+      code: "VALIDATION_ERROR",
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
   }
@@ -63,7 +70,10 @@ export async function joinQueueAction(
 
     const queue = await queueService.getQueue(queueId);
     if (!queue) {
-      return { error: "The selected queue is unavailable." };
+      return {
+        error: "The selected queue is unavailable.",
+        code: "QUEUE_NOT_FOUND",
+      };
     }
 
     const patient = getPatientStore().getOrCreatePatientForUser({
@@ -99,54 +109,60 @@ export async function joinQueueAction(
     };
   } catch (err) {
     if (err instanceof QueuePausedError) {
-      return { error: "This queue is paused and not accepting new patients." };
+      return { error: "This queue is paused and not accepting new patients.", code: "QUEUE_PAUSED" };
     }
     if (err instanceof QueueNotFoundError) {
-      return { error: "The selected queue is unavailable." };
+      return { error: "The selected queue is unavailable.", code: "QUEUE_NOT_FOUND" };
     }
     if (err instanceof AuthenticationError) {
-      return { error: "Please sign in to join a queue." };
+      return { error: "Please sign in to join a queue.", code: "UNAUTHENTICATED" };
     }
     if (err instanceof AuthorizationError) {
-      return { error: "You are not authorized to join this queue." };
+      return { error: "You are not authorized to join this queue.", code: "FORBIDDEN" };
     }
     if (err instanceof QueueError) {
-      return { error: "Unable to join this queue right now. Please try again." };
+      return { error: "Unable to join this queue right now. Please try again.", code: toActionErrorCode(err) };
     }
-    return { error: "Something went wrong. Please try again." };
+    return { error: "Something went wrong. Please try again.", code: "INTERNAL_ERROR" };
   }
 }
 
-export async function cancelQueueEntryAction(): Promise<{
-  error?: string;
-}> {
+export async function cancelQueueEntryAction(): Promise<ActionResult> {
   try {
     const user = await requireRole(USER_ROLES.PATIENT);
     const stored = getStoredEntryCookie();
     if (!stored) {
-      return { error: "No active queue entry found." };
+      return {
+        success: false,
+        code: "ENTRY_NOT_FOUND",
+        error: "No active queue entry found.",
+      };
     }
 
     const entry = await queueService.getQueueEntry(stored.entryId);
     if (!entry) {
-      return { error: "Unable to cancel your entry. Please try again." };
+      return {
+        success: false,
+        code: "ENTRY_NOT_FOUND",
+        error: "Unable to cancel your entry. Please try again.",
+      };
     }
 
     ensureOwnership(user.id, entry.patientId);
 
     await queueService.cancelQueueEntry(stored.entryId);
     cookies().delete(ENTRY_COOKIE_NAME);
-    return {};
+    return { success: true };
   } catch (err) {
     if (err instanceof InvalidTransitionError) {
-      return { error: "This queue entry can no longer be cancelled." };
+      return { success: false, code: "INVALID_QUEUE_STATE", error: "This queue entry can no longer be cancelled." };
     }
     if (err instanceof AuthenticationError) {
-      return { error: "Please sign in to cancel your entry." };
+      return { success: false, code: "UNAUTHENTICATED", error: "Please sign in to cancel your entry." };
     }
     if (err instanceof AuthorizationError) {
-      return { error: "You are not authorized to cancel this entry." };
+      return { success: false, code: "FORBIDDEN", error: "You are not authorized to cancel this entry." };
     }
-    return { error: "Unable to cancel your entry. Please try again." };
+    return { success: false, code: "INTERNAL_ERROR", error: "Unable to cancel your entry. Please try again." };
   }
 }

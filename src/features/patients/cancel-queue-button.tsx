@@ -15,10 +15,10 @@ export function CancelQueueButton() {
     setError(undefined);
     try {
       const result = await cancelQueueEntryAction();
-      if (result.error) {
-        setError(result.error);
-      } else {
+      if (result.success) {
         setCancelled(true);
+      } else {
+        setError(result.error);
       }
     } finally {
       setIsPending(false);
