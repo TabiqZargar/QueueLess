@@ -89,6 +89,19 @@ introduced in Phase 7. If a future integration needs duplicate-safe mutations
 (e.g. webhook replay), it should add request idempotency keys at the API layer
 on top of the atomic database transitions described above.
 
+## Realtime events (Phase 8)
+
+QueueService emits best-effort realtime events after successful mutations (see
+`docs/REALTIME_ARCHITECTURE.md`). Events are fire-and-forget: a realtime
+transport failure never rolls back or fails the queue operation, and the
+realtime layer never depends on a store (no outbox, no distributed
+transaction). Sequences are assigned by the in-memory transport from a single
+process-local counter, so ordering is only guaranteed within one Node process —
+the same scope as the current mock repository. When Phase 12 moves state to
+PostgreSQL (and if realtime moves to a production provider), the provider must
+supply its own ordering and catch-up semantics; the client contract (queue
+topic + after-sequence cursor) is provider-neutral.
+
 ## Rules preserved
 
 - At most one `CALLED` or `IN_CONSULTATION` patient per queue, always.

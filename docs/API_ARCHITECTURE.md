@@ -2,8 +2,8 @@
 
 This document is the canonical description of QueueLess's server boundary: how
 the UI reaches the queue domain, how every server entry point is structured,
-and the contracts that will stay stable when realtime (Phase 8) and database
-persistence (Phase 12) arrive.
+and the contracts that will stay stable as realtime (Phase 8, see
+docs/REALTIME_ARCHITECTURE.md) and database persistence (Phase 12) arrive.
 
 ## Server architecture
 
@@ -31,13 +31,15 @@ contains queue state-transition, position, or ETA logic.
 
 - **Server Actions / Route Handlers** know about Next.js, cookies, HTTP, forms.
 - **QueueService** knows **nothing** about Next.js, cookies, `redirect()`,
-  `headers()`, forms, React, or HTTP. It depends only on `QueueRepository`.
+  `headers()`, forms, React, or HTTP. It depends on `QueueRepository` and,
+  optionally, a `QueueEventPublisher` (Phase 8) injected in its constructor.
 - **QueueRepository** is the persistence seam. Today it is
   `MockQueueRepository`; Phase 12 replaces it with a Prisma-backed
   implementation **without changing the server/API contract**.
 
 The application-wide service instance is wired in `src/lib/queue/instance.ts` —
-the single place that swaps the repository implementation.
+the single place that swaps the repository implementation and injects the
+realtime publisher (built in `src/lib/realtime/instance.ts`).
 
 ## Server entry points
 
@@ -61,13 +63,18 @@ Reads are server components / feature view-model assemblers:
 | `getPatientStatus` | `src/features/patients/get-patient-status.ts` | public, entry-cookie-scoped |
 | `queueService.listQueues/getQueue/getQueueStats` | pages | public / layout-gated |
 
-### Route handlers (future)
+### Route handlers
 
-There are **no `/api` route handlers today** and no API surface is created for
-its own sake. Route handlers are introduced only when a non-browser consumer
-exists (see "Server action vs API" below). Once introduced they follow the same
-pipeline: parse input → authenticate → authorize → validate → service → DTO →
-HTTP response.
+Today there is one route handler, the realtime polling endpoint:
+
+| Route | Module | Purpose |
+| --- | --- | --- |
+| `GET /api/realtime/events?queue=&after=` | `src/app/api/realtime/events/route.ts` | Authorized short-polling stream for live UI refreshes (Phase 8) |
+
+No API surface is created for its own sake; more route handlers are introduced
+only when a non-browser consumer exists (see "Server action vs API" below).
+Every route handler follows the same pipeline: parse input → authenticate →
+authorize → validate → service → DTO → HTTP response.
 
 ## Consistent server operation pattern
 
@@ -172,6 +179,7 @@ any service call.
 | `getStaffDashboardData` | – | – | ✓ route-gated | – | – |
 | `getDoctorDashboardData` | – | – | – | ✓ route-gated | – |
 | `getQueueEvents` (activity) | – | – | ✓ via staff VM | – | – |
+| `GET /api/realtime/events` (poll) | – | ✓ own active entry | ✓ | ✓ own queue | ✓ |
 
 Role gates are enforced at the route (layout) boundary for dashboard reads and
 at the action boundary for every mutation. The read assemblers themselves do
@@ -217,7 +225,9 @@ response contract will be:
 ```
 
 with appropriate HTTP status codes (200/201/400/401/403/404/409/422/500)
-mapped from the same `ErrorCode` vocabulary used by server actions.
+mapped from the same `ErrorCode` vocabulary used by server actions. The realtime
+polling endpoint implements this contract today (200/400/401/403); its design is
+documented in `docs/REALTIME_ARCHITECTURE.md`.
 
 ## Security invariants
 
