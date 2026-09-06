@@ -90,7 +90,10 @@ export function CurrentPatientCard({
   const statusLabel = isCalled ? "Called" : "In consultation";
   const statusVariant = isCalled ? "warning" : "info";
 
-  const actionable = queueStatus === "ACTIVE" || queueStatus === "PAUSED";
+  // A new consultation is only started during normal operations. An
+  // in-progress consultation can always be completed, even while paused.
+  const canStart = queueStatus === "ACTIVE";
+  const canComplete = queueStatus === "ACTIVE" || queueStatus === "PAUSED";
 
   return (
     <section
@@ -129,7 +132,7 @@ export function CurrentPatientCard({
           </div>
 
           <div className="w-full sm:w-56 sm:shrink-0">
-            {currentPatient.status === "CALLED" && actionable && (
+            {currentPatient.status === "CALLED" && canStart && (
               <Button
                 className="w-full"
                 size="lg"
@@ -146,7 +149,14 @@ export function CurrentPatientCard({
               </Button>
             )}
 
-            {currentPatient.status === "IN_CONSULTATION" && actionable && (
+            {currentPatient.status === "CALLED" && !canStart && (
+              <p className="text-sm text-gray-500">
+                Queue is paused. Starting a consultation is available once staff
+                resume operations.
+              </p>
+            )}
+
+            {currentPatient.status === "IN_CONSULTATION" && canComplete && (
               <Button
                 className="w-full"
                 size="lg"
@@ -163,7 +173,7 @@ export function CurrentPatientCard({
               </Button>
             )}
 
-            {!actionable && (
+            {currentPatient.status === "IN_CONSULTATION" && !canComplete && (
               <p className="text-sm text-gray-500">
                 This queue is no longer active. No consultation actions are
                 available.
