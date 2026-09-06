@@ -1,9 +1,19 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { StaffCurrentPatient } from "@/lib/queue/queue-service";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatQueueToken } from "@/lib/utils";
+import {
+  completeConsultationAction,
+  startConsultationAction,
+} from "../actions";
+import { FeedbackMessage, type Feedback } from "@/components/feedback-message";
 import type { DoctorQueueState } from "../get-doctor-data";
+
+type PendingAction = "start" | "complete" | null;
 
 interface CurrentPatientProps {
   currentPatient: StaffCurrentPatient | null;
@@ -30,6 +40,26 @@ export function CurrentPatientCard({
   currentPatient,
   queueStatus,
 }: CurrentPatientProps) {
+  const router = useRouter();
+  const [pending, setPending] = useState<PendingAction>(null);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
+
+  async function runAction(
+    actionName: PendingAction,
+    action: () => Promise<{ message?: string; error?: string }>
+  ) {
+    setPending(actionName);
+    setFeedback(null);
+    const result = await action();
+    setPending(null);
+    if (result.error) {
+      setFeedback({ kind: "error", text: result.error });
+      return;
+    }
+    setFeedback({ kind: "success", text: result.message ?? "Done." });
+    router.refresh();
+  }
+
   if (!currentPatient) {
     return (
       <section
@@ -60,6 +90,8 @@ export function CurrentPatientCard({
   const statusLabel = isCalled ? "Called" : "In consultation";
   const statusVariant = isCalled ? "warning" : "info";
 
+  const actionable = queueStatus === "ACTIVE" || queueStatus === "PAUSED";
+
   return (
     <section
       className="rounded-xl border border-gray-200 bg-white shadow-sm"
@@ -74,30 +106,76 @@ export function CurrentPatientCard({
         </h2>
       </div>
       <div className="px-6 py-6">
-        <div className="flex items-center gap-3">
-          <span className="text-4xl font-bold text-gray-900">
-            {formatQueueToken(currentPatient.tokenNumber)}
-          </span>
-          <Badge variant={statusVariant}>{statusLabel}</Badge>
-        </div>
-        <p className="mt-2 text-base font-medium text-gray-700">
-          {currentPatient.patientName}
-        </p>
-        <p className="mt-0.5 text-sm text-gray-500">
-          {isCalled
-            ? currentPatient.calledAt
-              ? `Called ${formatElapsed(currentPatient.calledAt)}`
-              : "Ready for consultation"
-            : currentPatient.consultationStartedAt
-              ? `Consultation started ${formatElapsed(currentPatient.consultationStartedAt)}`
-              : "Consultation in progress"}
-        </p>
+        <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex items-center gap-3">
+              <span className="text-4xl font-bold text-gray-900">
+                {formatQueueToken(currentPatient.tokenNumber)}
+              </span>
+              <Badge variant={statusVariant}>{statusLabel}</Badge>
+            </div>
+            <p className="mt-2 text-base font-medium text-gray-700">
+              {currentPatient.patientName}
+            </p>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {isCalled
+                ? currentPatient.calledAt
+                  ? `Called ${formatElapsed(currentPatient.calledAt)}`
+                  : "Ready for consultation"
+                : currentPatient.consultationStartedAt
+                  ? `Consultation started ${formatElapsed(currentPatient.consultationStartedAt)}`
+                  : "Consultation in progress"}
+            </p>
+          </div>
 
-        {queueStatus !== "ACTIVE" && queueStatus !== "PAUSED" && (
-          <p className="mt-4 text-sm text-gray-500">
-            This queue is no longer active. No consultation actions are
-            available.
-          </p>
+          <div className="w-full sm:w-56 sm:shrink-0">
+            {currentPatient.status === "CALLED" && actionable && (
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={pending !== null}
+                onClick={() =>
+                  runAction("start", () =>
+                    startConsultationAction(currentPatient.entryId)
+                  )
+                }
+              >
+                {pending === "start"
+                  ? "Starting consultation..."
+                  : "Start Consultation"}
+              </Button>
+            )}
+
+            {currentPatient.status === "IN_CONSULTATION" && actionable && (
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={pending !== null}
+                onClick={() =>
+                  runAction("complete", () =>
+                    completeConsultationAction(currentPatient.entryId)
+                  )
+                }
+              >
+                {pending === "complete"
+                  ? "Completing consultation..."
+                  : "Complete Consultation"}
+              </Button>
+            )}
+
+            {!actionable && (
+              <p className="text-sm text-gray-500">
+                This queue is no longer active. No consultation actions are
+                available.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {feedback && (
+          <div className="mt-5">
+            <FeedbackMessage feedback={feedback} />
+          </div>
         )}
       </div>
     </section>
