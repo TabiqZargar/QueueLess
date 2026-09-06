@@ -5,20 +5,11 @@ import { getPatientStore } from "@/features/patients/patient-store";
 import { addWalkInSchema } from "@/lib/validation/staff";
 import { formatQueueToken } from "@/lib/utils";
 import {
-  CannotCallNextPatientError,
-  InvalidTransitionError,
-  NoPatientsWaitingError,
-  QueueEntryNotFoundError,
-  QueueError,
-  QueueNotActiveError,
-  QueueNotFoundError,
-  QueuePausedError,
-} from "@/lib/queue/errors";
+  ActionResult,
+  toActionErrorMessage,
+} from "@/lib/queue/action-error";
 
-export interface ActionResult {
-  message?: string;
-  error?: string;
-}
+export type { ActionResult };
 
 export async function callNextPatientAction(
   queueId: string
@@ -27,7 +18,7 @@ export async function callNextPatientAction(
     const called = await queueService.callNextPatient(queueId);
     return { message: `Patient ${formatQueueToken(called.tokenNumber)} called.` };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -40,7 +31,7 @@ export async function startConsultationAction(
       message: `Consultation started for ${formatQueueToken(started.tokenNumber)}.`,
     };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -53,7 +44,7 @@ export async function completeConsultationAction(
       message: `Consultation completed for ${formatQueueToken(completed.tokenNumber)}.`,
     };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -66,7 +57,7 @@ export async function markNoShowAction(
       message: `Patient ${formatQueueToken(marked.tokenNumber)} marked as no-show.`,
     };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -79,7 +70,7 @@ export async function cancelEntryAction(
       message: `Entry ${formatQueueToken(cancelled.tokenNumber)} cancelled.`,
     };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -114,7 +105,7 @@ export async function addWalkInAction(input: {
       message: `Walk-in ${formatQueueToken(result.entry.tokenNumber)} added. Position ${result.position}. Estimated wait ${result.estimatedWaitMinutes} min.`,
     };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -125,7 +116,7 @@ export async function pauseQueueAction(
     await queueService.pauseQueue(queueId);
     return { message: "Queue paused." };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
 }
 
@@ -136,34 +127,6 @@ export async function resumeQueueAction(
     await queueService.resumeQueue(queueId);
     return { message: "Queue resumed." };
   } catch (err) {
-    return { error: toStaffErrorMessage(err) };
+    return { error: toActionErrorMessage(err) };
   }
-}
-
-function toStaffErrorMessage(err: unknown): string {
-  if (err instanceof CannotCallNextPatientError) {
-    return "A patient is already being called or served. Complete the current operation before calling another patient.";
-  }
-  if (err instanceof QueuePausedError) {
-    return "This queue is paused. Resume the queue before performing this action.";
-  }
-  if (err instanceof QueueNotActiveError) {
-    return "This queue is not active.";
-  }
-  if (err instanceof QueueNotFoundError) {
-    return "This queue could not be found.";
-  }
-  if (err instanceof QueueEntryNotFoundError) {
-    return "This patient record could not be found.";
-  }
-  if (err instanceof NoPatientsWaitingError) {
-    return "There are no patients waiting to be called.";
-  }
-  if (err instanceof InvalidTransitionError) {
-    return "This action is not allowed for the patient's current status.";
-  }
-  if (err instanceof QueueError) {
-    return "Unable to complete this action. Please try again.";
-  }
-  return "Something went wrong. Please try again.";
 }

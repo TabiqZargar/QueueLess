@@ -1,11 +1,39 @@
 "use server";
 
-// Doctor actions reuse the single QueueService consultation workflow.
-// Re-exporting keeps one authoritative business implementation while
-// giving the doctor experience its own action surface.
-export {
-  startConsultationAction,
-  completeConsultationAction,
-} from "@/features/staff/actions";
+import { queueService } from "@/lib/queue/instance";
+import { formatQueueToken } from "@/lib/utils";
+import {
+  ActionResult,
+  toActionErrorMessage,
+} from "@/lib/queue/action-error";
 
-export type { ActionResult } from "@/features/staff/actions";
+/**
+ * Doctor consultation actions. Both delegate to the single
+ * QueueService implementation - no queue business logic lives here.
+ */
+
+export async function startConsultationAction(
+  entryId: string
+): Promise<ActionResult> {
+  try {
+    const started = await queueService.startConsultation(entryId);
+    return {
+      message: `Consultation started for ${formatQueueToken(started.tokenNumber)}.`,
+    };
+  } catch (err) {
+    return { error: toActionErrorMessage(err) };
+  }
+}
+
+export async function completeConsultationAction(
+  entryId: string
+): Promise<ActionResult> {
+  try {
+    const completed = await queueService.completeConsultation(entryId);
+    return {
+      message: `Consultation completed for ${formatQueueToken(completed.tokenNumber)}.`,
+    };
+  } catch (err) {
+    return { error: toActionErrorMessage(err) };
+  }
+}
