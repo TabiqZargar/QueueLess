@@ -1,9 +1,11 @@
-import { StaffWaitListEntry } from "@/lib/queue/queue-service";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
-import type { DoctorQueueState } from "../get-doctor-data";
+import type {
+  DoctorQueueState,
+  DoctorUpcomingEntry,
+} from "../get-doctor-data";
 
 interface UpcomingPatientsProps {
-  upcoming: StaffWaitListEntry[];
+  upcoming: DoctorUpcomingEntry[];
   queueStatus: DoctorQueueState;
 }
 

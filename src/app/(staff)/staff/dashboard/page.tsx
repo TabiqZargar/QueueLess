@@ -1,4 +1,5 @@
 import { queueService } from "@/lib/queue/instance";
+import { resolveSelectedQueueId } from "@/lib/queue/queue-selection";
 import { getStaffDashboardData } from "@/features/staff/get-staff-data";
 import { StaffDashboard } from "@/features/staff/components/staff-dashboard";
 
@@ -17,15 +18,7 @@ export default async function StaffDashboardPage({
       ? rawQueueId
       : undefined;
 
-  const selectedQueueId =
-    (requestedQueueId &&
-      queues.some((q) => q.id === requestedQueueId) &&
-      requestedQueueId) ||
-    [...queues]
-      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
-      .find((q) => q.status === "ACTIVE")?.id ||
-    queues[0]?.id ||
-    "";
+  const selectedQueueId = resolveSelectedQueueId(queues, requestedQueueId);
 
   const data = selectedQueueId
     ? await getStaffDashboardData(selectedQueueId)

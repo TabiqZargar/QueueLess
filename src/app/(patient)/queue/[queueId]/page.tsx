@@ -2,7 +2,7 @@ import Link from "next/link";
 import { queueService } from "@/lib/queue/instance";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { formatWaitTime } from "@/lib/utils";
+import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -50,7 +50,7 @@ export default async function QueueOverviewPage({
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-gray-500">Now serving</p>
           <p className="mt-1 text-2xl font-bold text-primary-600">
-            {stats.currentToken ? formatToken(stats.currentToken) : "—"}
+            {stats.currentToken ? formatQueueToken(stats.currentToken) : "—"}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
@@ -97,8 +97,4 @@ function QueueStatusBadge({ status }: { status: string }) {
     return <Badge variant="warning">Paused</Badge>;
   }
   return <Badge variant="default">Closed</Badge>;
-}
-
-function formatToken(tokenNumber: number): string {
-  return `A-${tokenNumber}`;
 }

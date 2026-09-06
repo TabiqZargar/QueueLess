@@ -5,6 +5,7 @@ import {
   StaffCurrentPatient,
   StaffWaitListEntry,
 } from "@/lib/queue/queue-service";
+import { QueueEntryStatus, EntryType } from "@/types";
 import { queueService } from "@/lib/queue/instance";
 
 export interface DoctorIdentity {
@@ -20,14 +21,42 @@ export interface DoctorIdentity {
  */
 export type DoctorQueueState = QueueWithDetails["status"];
 
+/**
+ * Doctor-facing projection of the patient currently being served. Carries only
+ * what the consultation UI needs - never patient ids, contact details or
+ * repository internals.
+ */
+export interface DoctorCurrentPatient {
+  entryId: string;
+  tokenNumber: number;
+  status: QueueEntryStatus;
+  patientName: string;
+  entryType: EntryType;
+  calledAt?: Date;
+  consultationStartedAt?: Date;
+}
+
+/**
+ * Doctor-facing projection of an upcoming waiting patient. Deliberately
+ * minimal: the doctor only needs the token, position and ETA to know who is
+ * next. patientId / queueId / joinedAt stay behind the server boundary.
+ */
+export interface DoctorUpcomingEntry {
+  entryId: string;
+  tokenNumber: number;
+  entryType: EntryType;
+  position: number;
+  estimatedWaitMinutes: number;
+}
+
 export interface DoctorDashboardData {
   queue: QueueWithDetails;
   queueStatus: DoctorQueueState;
   identity: DoctorIdentity;
   stats: QueueStatistics;
   counts: QueueStatusCounts;
-  currentPatient: StaffCurrentPatient | null;
-  upcoming: StaffWaitListEntry[];
+  currentPatient: DoctorCurrentPatient | null;
+  upcoming: DoctorUpcomingEntry[];
 }
 
 /**
@@ -62,7 +91,33 @@ export async function getDoctorDashboardData(
     },
     stats,
     counts,
-    currentPatient,
-    upcoming,
+    currentPatient: currentPatient
+      ? toDoctorCurrentPatient(currentPatient)
+      : null,
+    upcoming: upcoming.map(toDoctorUpcomingEntry),
+  };
+}
+
+function toDoctorCurrentPatient(
+  patient: StaffCurrentPatient
+): DoctorCurrentPatient {
+  return {
+    entryId: patient.entryId,
+    tokenNumber: patient.tokenNumber,
+    status: patient.status,
+    patientName: patient.patientName,
+    entryType: patient.entryType,
+    calledAt: patient.calledAt,
+    consultationStartedAt: patient.consultationStartedAt,
+  };
+}
+
+function toDoctorUpcomingEntry(entry: StaffWaitListEntry): DoctorUpcomingEntry {
+  return {
+    entryId: entry.entryId,
+    tokenNumber: entry.tokenNumber,
+    entryType: entry.entryType,
+    position: entry.position,
+    estimatedWaitMinutes: entry.estimatedWaitMinutes,
   };
 }

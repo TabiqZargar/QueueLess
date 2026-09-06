@@ -8,7 +8,7 @@ import {
   JoinQueueActionState,
 } from "@/features/patients/queue-actions";
 import { Button } from "@/components/ui/button";
-import { formatWaitTime } from "@/lib/utils";
+import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 
 interface JoinQueueFormProps {
   queues: QueueWithDetails[];
@@ -184,7 +184,7 @@ function ConfirmationView({
             Your token
           </p>
           <p className="mt-1 text-6xl font-bold text-primary-600">
-            {formatToken(tokenNumber)}
+            {formatQueueToken(tokenNumber)}
           </p>
         </div>
         <div className="mt-4 text-sm text-gray-600">
@@ -220,8 +220,4 @@ function ConfirmationView({
       </div>
     </div>
   );
-}
-
-function formatToken(tokenNumber: number): string {
-  return `A-${tokenNumber}`;
 }

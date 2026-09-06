@@ -5,7 +5,7 @@ import {
   PatientStatusData,
 } from "@/features/patients/get-patient-status";
 import { Button } from "@/components/ui/button";
-import { formatWaitTime } from "@/lib/utils";
+import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 import { CancelQueueButton } from "@/features/patients/cancel-queue-button";
 
 export const dynamic = "force-dynamic";
@@ -148,7 +148,7 @@ function StatusView({
           Your token
         </p>
         <p className="mt-1 text-6xl font-bold text-primary-600">
-          {formatToken(data.tokenNumber)}
+          {formatQueueToken(data.tokenNumber)}
         </p>
         <div className="mt-2 text-sm text-gray-600">
           <p className="font-medium text-gray-900">{data.departmentName}</p>
@@ -177,7 +177,7 @@ function StatusView({
         <p className="text-xs text-gray-500">Now serving</p>
         <p className="mt-1 text-3xl font-bold text-gray-900">
           {data.currentServingToken
-            ? formatToken(data.currentServingToken)
+            ? formatQueueToken(data.currentServingToken)
             : "—"}
         </p>
       </div>
@@ -234,7 +234,7 @@ function EntryState({
 function TokenHeader({ token }: { token: number }) {
   return (
     <p className="mt-4 text-4xl font-bold text-primary-600">
-      {formatToken(token)}
+      {formatQueueToken(token)}
     </p>
   );
 }
@@ -261,8 +261,4 @@ function NoEntry({ queueId }: { queueId: string }) {
       </div>
     </div>
   );
-}
-
-function formatToken(tokenNumber: number): string {
-  return `A-${tokenNumber}`;
 }
