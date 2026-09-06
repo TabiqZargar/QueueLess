@@ -4,6 +4,8 @@ import { queueService } from "@/lib/queue/instance";
 import { getPatientStore } from "@/features/patients/patient-store";
 import { addWalkInSchema } from "@/lib/validation/staff";
 import { formatQueueToken } from "@/lib/utils";
+import { requireRole } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
 import {
   ActionResult,
   toActionErrorMessage,
@@ -15,34 +17,9 @@ export async function callNextPatientAction(
   queueId: string
 ): Promise<ActionResult> {
   try {
+    await requireRole(USER_ROLES.STAFF);
     const called = await queueService.callNextPatient(queueId);
     return { message: `Patient ${formatQueueToken(called.tokenNumber)} called.` };
-  } catch (err) {
-    return { error: toActionErrorMessage(err) };
-  }
-}
-
-export async function startConsultationAction(
-  entryId: string
-): Promise<ActionResult> {
-  try {
-    const started = await queueService.startConsultation(entryId);
-    return {
-      message: `Consultation started for ${formatQueueToken(started.tokenNumber)}.`,
-    };
-  } catch (err) {
-    return { error: toActionErrorMessage(err) };
-  }
-}
-
-export async function completeConsultationAction(
-  entryId: string
-): Promise<ActionResult> {
-  try {
-    const completed = await queueService.completeConsultation(entryId);
-    return {
-      message: `Consultation completed for ${formatQueueToken(completed.tokenNumber)}.`,
-    };
   } catch (err) {
     return { error: toActionErrorMessage(err) };
   }
@@ -52,6 +29,7 @@ export async function markNoShowAction(
   entryId: string
 ): Promise<ActionResult> {
   try {
+    await requireRole(USER_ROLES.STAFF);
     const marked = await queueService.markNoShow(entryId);
     return {
       message: `Patient ${formatQueueToken(marked.tokenNumber)} marked as no-show.`,
@@ -65,6 +43,7 @@ export async function cancelEntryAction(
   entryId: string
 ): Promise<ActionResult> {
   try {
+    await requireRole(USER_ROLES.STAFF);
     const cancelled = await queueService.cancelQueueEntry(entryId);
     return {
       message: `Entry ${formatQueueToken(cancelled.tokenNumber)} cancelled.`,
@@ -85,6 +64,7 @@ export async function addWalkInAction(input: {
   }
 
   try {
+    await requireRole(USER_ROLES.STAFF);
     const queue = await queueService.getQueue(parsed.data.queueId);
     if (!queue) {
       return { error: "The queue is unavailable." };
@@ -113,6 +93,7 @@ export async function pauseQueueAction(
   queueId: string
 ): Promise<ActionResult> {
   try {
+    await requireRole(USER_ROLES.STAFF);
     await queueService.pauseQueue(queueId);
     return { message: "Queue paused." };
   } catch (err) {
@@ -124,6 +105,7 @@ export async function resumeQueueAction(
   queueId: string
 ): Promise<ActionResult> {
   try {
+    await requireRole(USER_ROLES.STAFF);
     await queueService.resumeQueue(queueId);
     return { message: "Queue resumed." };
   } catch (err) {

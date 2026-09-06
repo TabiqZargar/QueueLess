@@ -7,14 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 import {
-  completeConsultationAction,
   markNoShowAction,
-  startConsultationAction,
   type ActionResult,
 } from "../actions";
 import { FeedbackMessage, type Feedback } from "@/components/feedback-message";
 
-type PendingAction = "start" | "complete" | "noShow" | null;
+type PendingAction = "noShow" | null;
 
 interface CurrentPatientPanelProps {
   currentPatient: StaffCurrentPatientVM | null;
@@ -94,18 +92,6 @@ export function CurrentPatientPanel({
         <div className="mt-6 space-y-2">
           {currentPatient.status === "CALLED" && (
             <div className="space-y-2">
-              <Button
-                className="w-full"
-                disabled={pending !== null}
-                onClick={() =>
-                  runAction("start", () =>
-                    startConsultationAction(currentPatient.entryId)
-                  )
-                }
-              >
-                {pending === "start" ? "Starting..." : "Start Consultation"}
-              </Button>
-
               {!confirmingNoShow ? (
                 <Button
                   variant="secondary"
@@ -151,17 +137,9 @@ export function CurrentPatientPanel({
           )}
 
           {currentPatient.status === "IN_CONSULTATION" && (
-            <Button
-              className="w-full"
-              disabled={pending !== null}
-              onClick={() =>
-                runAction("complete", () =>
-                  completeConsultationAction(currentPatient.entryId)
-                )
-              }
-            >
-              {pending === "complete" ? "Completing..." : "Complete Consultation"}
-            </Button>
+            <p className="rounded-lg bg-gray-50 p-3 text-center text-sm text-gray-600">
+              Consultation in progress - managed from the doctor dashboard.
+            </p>
           )}
         </div>
 

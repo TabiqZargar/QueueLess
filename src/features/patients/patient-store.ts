@@ -41,6 +41,34 @@ class PatientStore {
     return patient;
   }
 
+  /**
+   * Returns the patient record for an authenticated user, creating it if
+   * necessary. The record id is the authenticated user's id so queue entries
+   * are owned by the signed-in patient (ownership checks use this id).
+   */
+  getOrCreatePatientForUser(input: {
+    userId: string;
+    name: string;
+    phone: string;
+    clinicId: string;
+  }): Patient {
+    const existing = this.patients.find((p) => p.id === input.userId);
+    if (existing) {
+      return existing;
+    }
+
+    const patient: Patient = {
+      id: input.userId,
+      name: input.name,
+      phone: input.phone,
+      clinicId: input.clinicId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.patients.push(patient);
+    return patient;
+  }
+
   getPatient(patientId: string): Patient | null {
     return this.patients.find((p) => p.id === patientId) ?? null;
   }
