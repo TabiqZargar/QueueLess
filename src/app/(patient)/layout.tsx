@@ -1,11 +1,21 @@
 import Link from "next/link";
 import { SessionNav } from "@/components/session/session-nav";
+import { getCurrentUser } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
+import { getPatientNotifications } from "@/features/notifications/get-notifications";
+import { NotificationBell } from "@/features/notifications/notification-bell";
 
-export default function PatientLayout({
+export default async function PatientLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+  const notifications =
+    user && user.role === USER_ROLES.PATIENT
+      ? await getPatientNotifications(user)
+      : null;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="border-b border-gray-200 bg-white">
@@ -20,6 +30,12 @@ export default function PatientLayout({
             >
               Join a queue
             </Link>
+            {notifications && (
+              <NotificationBell
+                initialNotifications={notifications.notifications}
+                initialUnreadCount={notifications.unreadCount}
+              />
+            )}
             <SessionNav />
           </div>
         </div>
