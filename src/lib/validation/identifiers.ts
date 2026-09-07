@@ -21,5 +21,12 @@ export const entryIdSchema = z
   .min(1, "A queue entry identifier is required")
   .max(100, "Invalid queue entry identifier");
 
+export const notificationIdSchema = z
+  .string()
+  .trim()
+  .min(1, "A notification identifier is required")
+  .max(100, "Invalid notification identifier");
+
 export type QueueId = z.infer<typeof queueIdSchema>;
 export type EntryId = z.infer<typeof entryIdSchema>;
+export type NotificationId = z.infer<typeof notificationIdSchema>;
