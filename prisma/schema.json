@@ -1,0 +1,2448 @@
+{
+  "schemaVersion": "1",
+  "targetFamily": "sql",
+  "target": "postgres",
+  "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
+  "roots": {
+    "clinic": {
+      "model": "Clinic",
+      "namespace": "public"
+    },
+    "department": {
+      "model": "Department",
+      "namespace": "public"
+    },
+    "doctor": {
+      "model": "Doctor",
+      "namespace": "public"
+    },
+    "patient": {
+      "model": "Patient",
+      "namespace": "public"
+    },
+    "queue": {
+      "model": "Queue",
+      "namespace": "public"
+    },
+    "queueEntry": {
+      "model": "QueueEntry",
+      "namespace": "public"
+    },
+    "queueEvent": {
+      "model": "QueueEvent",
+      "namespace": "public"
+    },
+    "user": {
+      "model": "User",
+      "namespace": "public"
+    }
+  },
+  "domain": {
+    "namespaces": {
+      "public": {
+        "enum": {
+          "DepartmentStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "INACTIVE",
+                "value": "INACTIVE"
+              }
+            ]
+          },
+          "DoctorStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "INACTIVE",
+                "value": "INACTIVE"
+              }
+            ]
+          },
+          "EntryType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "APPOINTMENT",
+                "value": "APPOINTMENT"
+              },
+              {
+                "name": "WALK_IN",
+                "value": "WALK_IN"
+              }
+            ]
+          },
+          "QueueEntryStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "REGISTERED",
+                "value": "REGISTERED"
+              },
+              {
+                "name": "WAITING",
+                "value": "WAITING"
+              },
+              {
+                "name": "CALLED",
+                "value": "CALLED"
+              },
+              {
+                "name": "IN_CONSULTATION",
+                "value": "IN_CONSULTATION"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              },
+              {
+                "name": "NO_SHOW",
+                "value": "NO_SHOW"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              }
+            ]
+          },
+          "QueueEventType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "QUEUE_CREATED",
+                "value": "QUEUE_CREATED"
+              },
+              {
+                "name": "PATIENT_REGISTERED",
+                "value": "PATIENT_REGISTERED"
+              },
+              {
+                "name": "QUEUE_JOINED",
+                "value": "QUEUE_JOINED"
+              },
+              {
+                "name": "PATIENT_CALLED",
+                "value": "PATIENT_CALLED"
+              },
+              {
+                "name": "CONSULTATION_STARTED",
+                "value": "CONSULTATION_STARTED"
+              },
+              {
+                "name": "CONSULTATION_COMPLETED",
+                "value": "CONSULTATION_COMPLETED"
+              },
+              {
+                "name": "PATIENT_NO_SHOW",
+                "value": "PATIENT_NO_SHOW"
+              },
+              {
+                "name": "PATIENT_CANCELLED",
+                "value": "PATIENT_CANCELLED"
+              },
+              {
+                "name": "WALK_IN_ADDED",
+                "value": "WALK_IN_ADDED"
+              },
+              {
+                "name": "QUEUE_PAUSED",
+                "value": "QUEUE_PAUSED"
+              },
+              {
+                "name": "QUEUE_RESUMED",
+                "value": "QUEUE_RESUMED"
+              },
+              {
+                "name": "DOCTOR_DELAYED",
+                "value": "DOCTOR_DELAYED"
+              }
+            ]
+          },
+          "QueueStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "NOT_STARTED",
+                "value": "NOT_STARTED"
+              },
+              {
+                "name": "ACTIVE",
+                "value": "ACTIVE"
+              },
+              {
+                "name": "PAUSED",
+                "value": "PAUSED"
+              },
+              {
+                "name": "COMPLETED",
+                "value": "COMPLETED"
+              },
+              {
+                "name": "CANCELLED",
+                "value": "CANCELLED"
+              }
+            ]
+          },
+          "UserRole": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "PATIENT",
+                "value": "PATIENT"
+              },
+              {
+                "name": "STAFF",
+                "value": "STAFF"
+              },
+              {
+                "name": "DOCTOR",
+                "value": "DOCTOR"
+              },
+              {
+                "name": "ADMIN",
+                "value": "ADMIN"
+              }
+            ]
+          }
+        },
+        "models": {
+          "Clinic": {
+            "fields": {
+              "address": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "contact": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "timezone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "departments": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "clinicId"
+                  ]
+                },
+                "to": {
+                  "model": "Department",
+                  "namespace": "public"
+                }
+              },
+              "patients": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "clinicId"
+                  ]
+                },
+                "to": {
+                  "model": "Patient",
+                  "namespace": "public"
+                }
+              },
+              "queues": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "clinicId"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              },
+              "users": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "clinicId"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "address": {
+                  "column": "address"
+                },
+                "contact": {
+                  "column": "contact"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "timezone": {
+                  "column": "timezone"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "clinic"
+            }
+          },
+          "Department": {
+            "fields": {
+              "clinicId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "DepartmentStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "clinic": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "clinicId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Clinic",
+                  "namespace": "public"
+                }
+              },
+              "doctors": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "departmentId"
+                  ]
+                },
+                "to": {
+                  "model": "Doctor",
+                  "namespace": "public"
+                }
+              },
+              "queues": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "departmentId"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "clinicId": {
+                  "column": "clinicId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "department"
+            }
+          },
+          "Doctor": {
+            "fields": {
+              "averageConsultationMinutes": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "departmentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "displayName": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "DoctorStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "userId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "department": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "departmentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Department",
+                  "namespace": "public"
+                }
+              },
+              "queues": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "doctorId"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "averageConsultationMinutes": {
+                  "column": "averageConsultationMinutes"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "departmentId": {
+                  "column": "departmentId"
+                },
+                "displayName": {
+                  "column": "displayName"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "doctor"
+            }
+          },
+          "Patient": {
+            "fields": {
+              "clinicId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "phone": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "clinic": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "clinicId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Clinic",
+                  "namespace": "public"
+                }
+              },
+              "entries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "patientId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEntry",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "clinicId": {
+                  "column": "clinicId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "phone": {
+                  "column": "phone"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "patient"
+            }
+          },
+          "Queue": {
+            "fields": {
+              "clinicId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "currentToken": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "departmentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "doctorId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "endedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "pausedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueDate": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "startedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "QueueStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "clinic": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "clinicId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Clinic",
+                  "namespace": "public"
+                }
+              },
+              "department": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "departmentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Department",
+                  "namespace": "public"
+                }
+              },
+              "doctor": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "doctorId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Doctor",
+                  "namespace": "public"
+                }
+              },
+              "entries": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEntry",
+                  "namespace": "public"
+                }
+              },
+              "events": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEvent",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "clinicId": {
+                  "column": "clinicId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "currentToken": {
+                  "column": "currentToken"
+                },
+                "departmentId": {
+                  "column": "departmentId"
+                },
+                "doctorId": {
+                  "column": "doctorId"
+                },
+                "endedAt": {
+                  "column": "endedAt"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "pausedAt": {
+                  "column": "pausedAt"
+                },
+                "queueDate": {
+                  "column": "queueDate"
+                },
+                "startedAt": {
+                  "column": "startedAt"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "queue"
+            }
+          },
+          "QueueEntry": {
+            "fields": {
+              "calledAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "cancelledAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "completedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "consultationStartedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "EntryType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "joinedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "patientId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "QueueEntryStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "tokenNumber": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "events": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueEntryId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEvent",
+                  "namespace": "public"
+                }
+              },
+              "patient": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "patientId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Patient",
+                  "namespace": "public"
+                }
+              },
+              "queue": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "queueId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "calledAt": {
+                  "column": "calledAt"
+                },
+                "cancelledAt": {
+                  "column": "cancelledAt"
+                },
+                "completedAt": {
+                  "column": "completedAt"
+                },
+                "consultationStartedAt": {
+                  "column": "consultationStartedAt"
+                },
+                "entryType": {
+                  "column": "entryType"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "joinedAt": {
+                  "column": "joinedAt"
+                },
+                "patientId": {
+                  "column": "patientId"
+                },
+                "queueId": {
+                  "column": "queueId"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "tokenNumber": {
+                  "column": "tokenNumber"
+                }
+              },
+              "namespaceId": "public",
+              "table": "queueEntry"
+            }
+          },
+          "QueueEvent": {
+            "fields": {
+              "actorUserId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "eventType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "QueueEventType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "metadata": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueEntryId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "timestamp": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "actor": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "actorUserId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              },
+              "queue": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "queueId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              },
+              "queueEntry": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "queueEntryId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEntry",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "actorUserId": {
+                  "column": "actorUserId"
+                },
+                "eventType": {
+                  "column": "eventType"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "metadata": {
+                  "column": "metadata"
+                },
+                "queueEntryId": {
+                  "column": "queueEntryId"
+                },
+                "queueId": {
+                  "column": "queueId"
+                },
+                "timestamp": {
+                  "column": "timestamp"
+                }
+              },
+              "namespaceId": "public",
+              "table": "queueEvent"
+            }
+          },
+          "User": {
+            "fields": {
+              "clinicId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "email": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "name": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "phone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "role": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "UserRole",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "clinic": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "clinicId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Clinic",
+                  "namespace": "public"
+                }
+              },
+              "doctor": {
+                "cardinality": "1:1",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Doctor",
+                  "namespace": "public"
+                }
+              },
+              "events": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "actorUserId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEvent",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "clinicId": {
+                  "column": "clinicId"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "email": {
+                  "column": "email"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "name": {
+                  "column": "name"
+                },
+                "phone": {
+                  "column": "phone"
+                },
+                "role": {
+                  "column": "role"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                }
+              },
+              "namespaceId": "public",
+              "table": "user"
+            }
+          }
+        }
+      }
+    }
+  },
+  "storage": {
+    "namespaces": {
+      "public": {
+        "entries": {
+          "table": {
+            "clinic": {
+              "columns": {
+                "address": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "contact": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "timezone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "department": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE')",
+                  "name": "department_status_check_ee520df2",
+                  "prefix": "department_status_check"
+                }
+              ],
+              "columns": {
+                "clinicId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "DepartmentStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "clinicId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "department"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "clinic"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "clinicId"
+                  ],
+                  "name": "department_clinicId_idx_8f933800",
+                  "prefix": "department_clinicId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "doctor": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('ACTIVE', 'INACTIVE')",
+                  "name": "doctor_status_check_ee520df2",
+                  "prefix": "doctor_status_check"
+                }
+              ],
+              "columns": {
+                "averageConsultationMinutes": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "departmentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "displayName": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "DoctorStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "doctor"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "departmentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "doctor"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "department"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "departmentId"
+                  ],
+                  "name": "doctor_departmentId_idx_8e261ed8",
+                  "prefix": "doctor_departmentId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId"
+                  ]
+                }
+              ]
+            },
+            "patient": {
+              "columns": {
+                "clinicId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "phone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "clinicId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "patient"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "clinic"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "clinicId"
+                  ],
+                  "name": "patient_clinicId_idx_8f933800",
+                  "prefix": "patient_clinicId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "queue": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('NOT_STARTED', 'ACTIVE', 'PAUSED', 'COMPLETED', 'CANCELLED')",
+                  "name": "queue_status_check_97e0dd0e",
+                  "prefix": "queue_status_check"
+                }
+              ],
+              "columns": {
+                "clinicId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "currentToken": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                },
+                "departmentId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "doctorId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "endedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "pausedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "queueDate": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "startedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "QueueStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "clinicId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "clinic"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "departmentId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "department"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "doctorId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "doctor"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "clinicId"
+                  ],
+                  "name": "queue_clinicId_idx_8f933800",
+                  "prefix": "queue_clinicId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "departmentId"
+                  ],
+                  "name": "queue_departmentId_idx_8e261ed8",
+                  "prefix": "queue_departmentId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "doctorId"
+                  ],
+                  "name": "queue_doctorId_idx_04369053",
+                  "prefix": "queue_doctorId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueDate"
+                  ],
+                  "name": "queue_queueDate_idx_a3b499c8",
+                  "prefix": "queue_queueDate_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "queueEntry": {
+              "checks": [
+                {
+                  "expression": "\"entryType\" IN ('APPOINTMENT', 'WALK_IN')",
+                  "name": "queueEntry_entryType_check_00cb452a",
+                  "prefix": "queueEntry_entryType_check"
+                },
+                {
+                  "expression": "\"status\" IN ('REGISTERED', 'WAITING', 'CALLED', 'IN_CONSULTATION', 'COMPLETED', 'NO_SHOW', 'CANCELLED')",
+                  "name": "queueEntry_status_check_2792efe4",
+                  "prefix": "queueEntry_status_check"
+                }
+              ],
+              "columns": {
+                "calledAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "cancelledAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "completedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "consultationStartedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "entryType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "EntryType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "joinedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "patientId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "queueId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "QueueEntryStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "tokenNumber": {
+                  "codecId": "pg/int4@1",
+                  "nativeType": "int4",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "queueId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEntry"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "patientId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEntry"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "patient"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "patientId"
+                  ],
+                  "name": "queueEntry_patientId_idx_e5f07e88",
+                  "prefix": "queueEntry_patientId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId"
+                  ],
+                  "name": "queueEntry_queueId_idx_88ef1f02",
+                  "prefix": "queueEntry_queueId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId",
+                    "status"
+                  ],
+                  "name": "queueEntry_queueId_status_idx_26329bf4",
+                  "prefix": "queueEntry_queueId_status_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "queueId",
+                    "tokenNumber"
+                  ]
+                }
+              ]
+            },
+            "queueEvent": {
+              "checks": [
+                {
+                  "expression": "\"eventType\" IN ('QUEUE_CREATED', 'PATIENT_REGISTERED', 'QUEUE_JOINED', 'PATIENT_CALLED', 'CONSULTATION_STARTED', 'CONSULTATION_COMPLETED', 'PATIENT_NO_SHOW', 'PATIENT_CANCELLED', 'WALK_IN_ADDED', 'QUEUE_PAUSED', 'QUEUE_RESUMED', 'DOCTOR_DELAYED')",
+                  "name": "queueEvent_eventType_check_ff041c07",
+                  "prefix": "queueEvent_eventType_check"
+                }
+              ],
+              "columns": {
+                "actorUserId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "eventType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "QueueEventType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "metadata": {
+                  "codecId": "pg/json@1",
+                  "nativeType": "json",
+                  "nullable": true
+                },
+                "queueEntryId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "queueId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "timestamp": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "queueId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "queueEntryId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEntry"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "actorUserId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "actorUserId"
+                  ],
+                  "name": "queueEvent_actorUserId_idx_96dac96c",
+                  "prefix": "queueEvent_actorUserId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueEntryId"
+                  ],
+                  "name": "queueEvent_queueEntryId_idx_5167a6d8",
+                  "prefix": "queueEvent_queueEntryId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId"
+                  ],
+                  "name": "queueEvent_queueId_idx_88ef1f02",
+                  "prefix": "queueEvent_queueId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId",
+                    "timestamp"
+                  ],
+                  "name": "queueEvent_queueId_timestamp_idx_19d82d86",
+                  "prefix": "queueEvent_queueId_timestamp_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "user": {
+              "checks": [
+                {
+                  "expression": "\"role\" IN ('PATIENT', 'STAFF', 'DOCTOR', 'ADMIN')",
+                  "name": "user_role_check_fa85347c",
+                  "prefix": "user_role_check"
+                }
+              ],
+              "columns": {
+                "clinicId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "email": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "name": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "phone": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "role": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "UserRole",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "clinicId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "clinic"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "clinicId"
+                  ],
+                  "name": "user_clinicId_idx_8f933800",
+                  "prefix": "user_clinicId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "email"
+                  ]
+                }
+              ]
+            }
+          },
+          "valueSet": {
+            "DepartmentStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "INACTIVE"
+              ]
+            },
+            "DoctorStatus": {
+              "kind": "valueSet",
+              "values": [
+                "ACTIVE",
+                "INACTIVE"
+              ]
+            },
+            "EntryType": {
+              "kind": "valueSet",
+              "values": [
+                "APPOINTMENT",
+                "WALK_IN"
+              ]
+            },
+            "QueueEntryStatus": {
+              "kind": "valueSet",
+              "values": [
+                "REGISTERED",
+                "WAITING",
+                "CALLED",
+                "IN_CONSULTATION",
+                "COMPLETED",
+                "NO_SHOW",
+                "CANCELLED"
+              ]
+            },
+            "QueueEventType": {
+              "kind": "valueSet",
+              "values": [
+                "QUEUE_CREATED",
+                "PATIENT_REGISTERED",
+                "QUEUE_JOINED",
+                "PATIENT_CALLED",
+                "CONSULTATION_STARTED",
+                "CONSULTATION_COMPLETED",
+                "PATIENT_NO_SHOW",
+                "PATIENT_CANCELLED",
+                "WALK_IN_ADDED",
+                "QUEUE_PAUSED",
+                "QUEUE_RESUMED",
+                "DOCTOR_DELAYED"
+              ]
+            },
+            "QueueStatus": {
+              "kind": "valueSet",
+              "values": [
+                "NOT_STARTED",
+                "ACTIVE",
+                "PAUSED",
+                "COMPLETED",
+                "CANCELLED"
+              ]
+            },
+            "UserRole": {
+              "kind": "valueSet",
+              "values": [
+                "PATIENT",
+                "STAFF",
+                "DOCTOR",
+                "ADMIN"
+              ]
+            }
+          }
+        },
+        "id": "public",
+        "kind": "postgres-schema"
+      }
+    },
+    "storageHash": "804823ca44cb67dc67417b0e947820d9cf1619a4c9d3b766d5ea619363300b2b"
+  },
+  "capabilities": {
+    "postgres": {
+      "distinctOn": true,
+      "jsonAgg": true,
+      "lateral": true,
+      "limit": true,
+      "orderBy": true,
+      "returning": true
+    },
+    "sql": {
+      "checkConstraint": true,
+      "defaultInInsert": true,
+      "enums": true,
+      "lateral": true,
+      "returning": true,
+      "scalarList": true
+    }
+  },
+  "extensions": {},
+  "meta": {},
+  "_generated": {
+    "warning": "⚠️  GENERATED FILE - DO NOT EDIT",
+    "message": "This file is automatically generated by \"prisma contract emit\".",
+    "regenerate": "To regenerate, run: prisma contract emit"
+  }
+}
