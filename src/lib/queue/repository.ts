@@ -72,4 +72,21 @@ export interface QueueRepository {
   addQueueEvent(event: Omit<QueueEvent, "id" | "timestamp">): Promise<QueueEvent>;
 
   getQueueEvents(queueId: string): Promise<QueueEvent[]>;
+
+  /** Optional database-backed atomic operations. */
+  joinQueueAtomic?(data: CreateQueueEntryInput): Promise<QueueEntry>;
+
+  claimNextWaitingEntry?(queueId: string): Promise<QueueEntry | null>;
+
+  updateQueueEntryIfStatus?(
+    entryId: string,
+    expectedStatus: QueueEntryStatus,
+    data: UpdateQueueEntryInput
+  ): Promise<QueueEntry | null>;
+
+  updateQueueStatusIfStatus?(
+    queueId: string,
+    expectedStatus: QueueStatus,
+    status: QueueStatus
+  ): Promise<Queue | null>;
 }

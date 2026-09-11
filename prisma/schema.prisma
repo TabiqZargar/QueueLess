@@ -1,0 +1,246 @@
+// use prisma-next
+
+model Clinic {
+  id         String       @id
+  name       String
+  address    String
+  contact    String
+  timezone   String
+  createdAt  TimestamptzString @default(now())
+  updatedAt  TimestamptzString @default(now())
+
+  users       User[]
+  patients    Patient[]
+  departments Department[]
+  queues      Queue[]
+}
+
+model User {
+  id         String       @id
+  name       String
+  email      String       @unique
+  phone      String?
+  role       UserRole
+  clinicId   String
+  createdAt  TimestamptzString @default(now())
+  updatedAt  TimestamptzString @default(now())
+
+  clinic        Clinic         @relation(fields: [clinicId], references: [id])
+  doctor        Doctor?
+  events        QueueEvent[]
+  notifications Notification[]
+}
+
+model Patient {
+  id         String       @id
+  name       String
+  phone      String
+  email      String?
+  clinicId   String
+  createdAt  TimestamptzString @default(now())
+  updatedAt  TimestamptzString @default(now())
+
+  clinic  Clinic       @relation(fields: [clinicId], references: [id])
+  entries QueueEntry[]
+}
+
+model Department {
+  id         String       @id
+  clinicId   String
+  name       String
+  status     DepartmentStatus
+  createdAt  TimestamptzString @default(now())
+  updatedAt  TimestamptzString @default(now())
+
+  clinic  Clinic   @relation(fields: [clinicId], references: [id])
+  doctors Doctor[]
+  queues  Queue[]
+}
+
+model Doctor {
+  id                         String       @id
+  userId                     String?      @unique
+  displayName                String
+  departmentId               String
+  status                     DoctorStatus
+  averageConsultationMinutes Int
+  createdAt                  TimestamptzString @default(now())
+  updatedAt                  TimestamptzString @default(now())
+
+  user       User?      @relation(fields: [userId], references: [id])
+  department Department @relation(fields: [departmentId], references: [id])
+  queues     Queue[]
+}
+
+model Queue {
+  id           String       @id
+  clinicId     String
+  departmentId String
+  doctorId     String
+  queueDate    TimestamptzString
+  status       QueueStatus
+  currentToken Int
+  startedAt    TimestamptzString?
+  pausedAt     TimestamptzString?
+  endedAt      TimestamptzString?
+  createdAt    TimestamptzString @default(now())
+  updatedAt    TimestamptzString @default(now())
+
+  clinic        Clinic         @relation(fields: [clinicId], references: [id])
+  department    Department     @relation(fields: [departmentId], references: [id])
+  doctor        Doctor         @relation(fields: [doctorId], references: [id])
+  entries       QueueEntry[]
+  events        QueueEvent[]
+  notifications Notification[]
+
+  @@index([clinicId])
+  @@index([departmentId])
+  @@index([doctorId])
+  @@index([queueDate])
+}
+
+model QueueEntry {
+  id                    String       @id
+  queueId               String
+  patientId             String
+  tokenNumber           Int
+  entryType             EntryType
+  status                QueueEntryStatus
+  joinedAt              TimestamptzString
+  calledAt              TimestamptzString?
+  consultationStartedAt TimestamptzString?
+  completedAt           TimestamptzString?
+  cancelledAt           TimestamptzString?
+
+  queue         Queue          @relation(fields: [queueId], references: [id])
+  patient       Patient        @relation(fields: [patientId], references: [id])
+  events        QueueEvent[]
+  notifications Notification[]
+
+  @@unique([queueId, tokenNumber])
+  @@index([queueId, status])
+  @@index([patientId])
+}
+
+model QueueEvent {
+  id           String          @id
+  queueId      String
+  queueEntryId String?
+  actorUserId  String?
+  eventType    QueueEventType
+  timestamp    TimestamptzString @default(now())
+  metadata     Json?
+
+  queue      Queue       @relation(fields: [queueId], references: [id])
+  queueEntry QueueEntry? @relation(fields: [queueEntryId], references: [id])
+  actor      User?       @relation(fields: [actorUserId], references: [id])
+
+  @@index([queueId, timestamp])
+  @@index([queueEntryId])
+  @@index([actorUserId])
+}
+
+model Notification {
+  id        String       @id
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  channel   NotificationChannel
+  queueId   String?
+  entryId   String?
+  eventId   String?
+  dedupeKey String?
+  createdAt TimestamptzString @default(now())
+  readAt    TimestamptzString?
+
+  user       User        @relation(fields: [userId], references: [id])
+  queue      Queue?      @relation(fields: [queueId], references: [id])
+  queueEntry QueueEntry? @relation(fields: [entryId], references: [id])
+
+  // Prevent duplicate event-based notifications for the same user.
+  @@unique([userId, type, eventId])
+
+  // Prevent duplicate generated notifications such as TURN_APPROACHING.
+  @@unique([userId, type, dedupeKey])
+
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([queueId])
+  @@index([entryId])
+  @@index([eventId])
+}
+
+enum UserRole {
+  PATIENT
+  STAFF
+  DOCTOR
+  ADMIN
+}
+
+enum DepartmentStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum DoctorStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum QueueStatus {
+  NOT_STARTED
+  ACTIVE
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum QueueEntryStatus {
+  REGISTERED
+  WAITING
+  CALLED
+  IN_CONSULTATION
+  COMPLETED
+  NO_SHOW
+  CANCELLED
+}
+
+enum EntryType {
+  APPOINTMENT
+  WALK_IN
+}
+
+enum QueueEventType {
+  QUEUE_CREATED
+  PATIENT_REGISTERED
+  QUEUE_JOINED
+  PATIENT_CALLED
+  CONSULTATION_STARTED
+  CONSULTATION_COMPLETED
+  PATIENT_NO_SHOW
+  PATIENT_CANCELLED
+  WALK_IN_ADDED
+  QUEUE_PAUSED
+  QUEUE_RESUMED
+  DOCTOR_DELAYED
+}
+
+enum NotificationType {
+  QUEUE_JOINED
+  TURN_APPROACHING
+  PATIENT_CALLED
+  CONSULTATION_STARTED
+  QUEUE_COMPLETED
+  QUEUE_CANCELLED
+  QUEUE_PAUSED
+  QUEUE_RESUMED
+  NO_SHOW
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  SMS
+  PUSH
+}

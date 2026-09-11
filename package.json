@@ -1,5 +1,6 @@
 {
   "name": "queueless",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -8,9 +9,15 @@
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "db:seed": "node --experimental-strip-types prisma/seed.ts",
+    "postinstall": "prisma skills sync || exit 0",
+    "contract:emit": "prisma contract emit"
   },
   "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "@prisma/orm-postgres": "^8.0.0-rc.8",
+    "dotenv": "^17.4.2",
     "next": "^14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -24,6 +31,7 @@
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.0",
     "postcss": "^8.4.38",
+    "prisma": "^8.0.0-rc.13",
     "tailwindcss": "^3.4.3",
     "typescript": "^5.4.0",
     "vitest": "^2.1.9"
