@@ -16,6 +16,10 @@
       "model": "Doctor",
       "namespace": "public"
     },
+    "notification": {
+      "model": "Notification",
+      "namespace": "public"
+    },
     "patient": {
       "model": "Patient",
       "namespace": "public"
@@ -77,6 +81,68 @@
               {
                 "name": "WALK_IN",
                 "value": "WALK_IN"
+              }
+            ]
+          },
+          "NotificationChannel": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "IN_APP",
+                "value": "IN_APP"
+              },
+              {
+                "name": "EMAIL",
+                "value": "EMAIL"
+              },
+              {
+                "name": "SMS",
+                "value": "SMS"
+              },
+              {
+                "name": "PUSH",
+                "value": "PUSH"
+              }
+            ]
+          },
+          "NotificationType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "QUEUE_JOINED",
+                "value": "QUEUE_JOINED"
+              },
+              {
+                "name": "TURN_APPROACHING",
+                "value": "TURN_APPROACHING"
+              },
+              {
+                "name": "PATIENT_CALLED",
+                "value": "PATIENT_CALLED"
+              },
+              {
+                "name": "CONSULTATION_STARTED",
+                "value": "CONSULTATION_STARTED"
+              },
+              {
+                "name": "QUEUE_COMPLETED",
+                "value": "QUEUE_COMPLETED"
+              },
+              {
+                "name": "QUEUE_CANCELLED",
+                "value": "QUEUE_CANCELLED"
+              },
+              {
+                "name": "QUEUE_PAUSED",
+                "value": "QUEUE_PAUSED"
+              },
+              {
+                "name": "QUEUE_RESUMED",
+                "value": "QUEUE_RESUMED"
+              },
+              {
+                "name": "NO_SHOW",
+                "value": "NO_SHOW"
               }
             ]
           },
@@ -622,6 +688,195 @@
               "table": "doctor"
             }
           },
+          "Notification": {
+            "fields": {
+              "channel": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "NotificationChannel",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "dedupeKey": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "entryId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "eventId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "message": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "readAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "NotificationType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "userId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "queue": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "queueId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              },
+              "queueEntry": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "entryId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "QueueEntry",
+                  "namespace": "public"
+                }
+              },
+              "user": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "userId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "User",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "channel": {
+                  "column": "channel"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "dedupeKey": {
+                  "column": "dedupeKey"
+                },
+                "entryId": {
+                  "column": "entryId"
+                },
+                "eventId": {
+                  "column": "eventId"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "message": {
+                  "column": "message"
+                },
+                "queueId": {
+                  "column": "queueId"
+                },
+                "readAt": {
+                  "column": "readAt"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "userId": {
+                  "column": "userId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "notification"
+            }
+          },
           "Patient": {
             "fields": {
               "clinicId": {
@@ -902,6 +1157,21 @@
                   "model": "QueueEvent",
                   "namespace": "public"
                 }
+              },
+              "notifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueId"
+                  ]
+                },
+                "to": {
+                  "model": "Notification",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1052,6 +1322,21 @@
                 },
                 "to": {
                   "model": "QueueEvent",
+                  "namespace": "public"
+                }
+              },
+              "notifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "entryId"
+                  ]
+                },
+                "to": {
+                  "model": "Notification",
                   "namespace": "public"
                 }
               },
@@ -1369,6 +1654,21 @@
                   "model": "QueueEvent",
                   "namespace": "public"
                 }
+              },
+              "notifications": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "userId"
+                  ]
+                },
+                "to": {
+                  "model": "Notification",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1672,6 +1972,221 @@
                 {
                   "columns": [
                     "userId"
+                  ]
+                }
+              ]
+            },
+            "notification": {
+              "checks": [
+                {
+                  "expression": "\"channel\" IN ('IN_APP', 'EMAIL', 'SMS', 'PUSH')",
+                  "name": "notification_channel_check_7b5c13c0",
+                  "prefix": "notification_channel_check"
+                },
+                {
+                  "expression": "\"type\" IN ('QUEUE_JOINED', 'TURN_APPROACHING', 'PATIENT_CALLED', 'CONSULTATION_STARTED', 'QUEUE_COMPLETED', 'QUEUE_CANCELLED', 'QUEUE_PAUSED', 'QUEUE_RESUMED', 'NO_SHOW')",
+                  "name": "notification_type_check_2df23cfa",
+                  "prefix": "notification_type_check"
+                }
+              ],
+              "columns": {
+                "channel": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "NotificationChannel",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "dedupeKey": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "entryId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "eventId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "message": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "queueId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "readAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "NotificationType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "userId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "userId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "notification"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "user"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "queueId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "notification"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  }
+                },
+                {
+                  "source": {
+                    "columns": [
+                      "entryId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "notification"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueEntry"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "entryId"
+                  ],
+                  "name": "notification_entryId_idx_8b42d1db",
+                  "prefix": "notification_entryId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "eventId"
+                  ],
+                  "name": "notification_eventId_idx_6a266d47",
+                  "prefix": "notification_eventId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId"
+                  ],
+                  "name": "notification_queueId_idx_88ef1f02",
+                  "prefix": "notification_queueId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "createdAt"
+                  ],
+                  "name": "notification_userId_createdAt_idx_f726f04a",
+                  "prefix": "notification_userId_createdAt_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId"
+                  ],
+                  "name": "notification_userId_idx_a489d58a",
+                  "prefix": "notification_userId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "readAt"
+                  ],
+                  "name": "notification_userId_readAt_idx_8bd92969",
+                  "prefix": "notification_userId_readAt_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "userId",
+                    "type",
+                    "eventId"
+                  ]
+                },
+                {
+                  "columns": [
+                    "userId",
+                    "type",
+                    "dedupeKey"
                   ]
                 }
               ]
@@ -2364,6 +2879,29 @@
                 "WALK_IN"
               ]
             },
+            "NotificationChannel": {
+              "kind": "valueSet",
+              "values": [
+                "IN_APP",
+                "EMAIL",
+                "SMS",
+                "PUSH"
+              ]
+            },
+            "NotificationType": {
+              "kind": "valueSet",
+              "values": [
+                "QUEUE_JOINED",
+                "TURN_APPROACHING",
+                "PATIENT_CALLED",
+                "CONSULTATION_STARTED",
+                "QUEUE_COMPLETED",
+                "QUEUE_CANCELLED",
+                "QUEUE_PAUSED",
+                "QUEUE_RESUMED",
+                "NO_SHOW"
+              ]
+            },
             "QueueEntryStatus": {
               "kind": "valueSet",
               "values": [
@@ -2418,7 +2956,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "804823ca44cb67dc67417b0e947820d9cf1619a4c9d3b766d5ea619363300b2b"
+    "storageHash": "475472fc0afac836d8e2c46285bafa03c9732928f1695fbed98df1ea26f5f268"
   },
   "capabilities": {
     "postgres": {
