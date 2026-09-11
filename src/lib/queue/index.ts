@@ -1,4 +1,5 @@
 export { MockQueueRepository } from "./mock-repository";
+export { PrismaQueueRepository } from "./prisma-repository";
 export { QueueService } from "./queue-service";
 export type {
   JoinQueueInput,

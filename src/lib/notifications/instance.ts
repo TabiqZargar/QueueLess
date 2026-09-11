@@ -1,4 +1,5 @@
 import type { QueueService } from "@/lib/queue/queue-service";
+import { PrismaNotificationRepository } from "./prisma-repository";
 import { MockNotificationRepository } from "./mock-repository";
 import { NotificationService } from "./service";
 import { NotificationPolicy } from "./policy";
@@ -17,11 +18,14 @@ import type { NotificationEventHandler } from "./event-handler";
  * after the queue service is constructed, and the result is injected as the
  * third constructor argument.
  *
- *   export const notificationRepository = new MockNotificationRepository();
+ *   export const notificationRepository = new PrismaNotificationRepository();
  *   export const notificationService = new NotificationService(notificationRepository);
  */
 
-export const notificationRepository = new MockNotificationRepository();
+export const notificationRepository =
+  process.env.NODE_ENV !== "test" && process.env.DATABASE_URL
+  ? new PrismaNotificationRepository()
+  : new MockNotificationRepository();
 
 export const notificationService = new NotificationService(
   notificationRepository

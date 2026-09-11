@@ -126,16 +126,20 @@ export class QueueService {
       throw new QueueNotActiveError(input.queueId, queue.status);
     }
 
-    const currentToken = await this.getNextTokenNumber(input.queueId);
-
-    const entry = await this.repository.createQueueEntry({
+    const entryInput = {
       queueId: input.queueId,
       patientId: input.patientId,
-      tokenNumber: currentToken,
+      tokenNumber: this.repository.joinQueueAtomic
+        ? 0
+        : await this.getNextTokenNumber(input.queueId),
       entryType: input.entryType ?? "APPOINTMENT",
       status: "WAITING",
       joinedAt: new Date(),
-    });
+    } as const;
+
+    const entry = this.repository.joinQueueAtomic
+      ? await this.repository.joinQueueAtomic(entryInput)
+      : await this.repository.createQueueEntry(entryInput);
 
     await this.addDomainEvent({
       queueId: input.queueId,
@@ -327,10 +331,22 @@ export class QueueService {
       throw new NoPatientsWaitingError(queueId);
     }
 
-    const updated = await this.repository.updateQueueEntry(next.id, {
+    const updated = this.repository.claimNextWaitingEntry
+      ? await this.repository.claimNextWaitingEntry(queueId)
+      : await this.repository.updateQueueEntry(next.id, {
       status: "CALLED",
       calledAt: new Date(),
     });
+
+    if (!updated) {
+      const latestEntries = await this.repository.getQueueEntries(queueId);
+      if (latestEntries.some((entry) =>
+        entry.status === "CALLED" || entry.status === "IN_CONSULTATION"
+      )) {
+        throw new CannotCallNextPatientError();
+      }
+      throw new NoPatientsWaitingError(queueId);
+    }
 
     await this.addDomainEvent({
       queueId,
@@ -353,10 +369,19 @@ export class QueueService {
       throw new InvalidTransitionError(entry.status, "IN_CONSULTATION");
     }
 
-    const updated = await this.repository.updateQueueEntry(entryId, {
+    const updated = this.repository.updateQueueEntryIfStatus
+      ? await this.repository.updateQueueEntryIfStatus(entryId, entry.status, {
       status: "IN_CONSULTATION",
       consultationStartedAt: new Date(),
-    });
+    })
+      : await this.repository.updateQueueEntry(entryId, {
+        status: "IN_CONSULTATION",
+        consultationStartedAt: new Date(),
+      });
+
+    if (!updated) {
+      throw new InvalidTransitionError(entry.status, "IN_CONSULTATION");
+    }
 
     await this.addDomainEvent({
       queueId: entry.queueId,
@@ -379,10 +404,19 @@ export class QueueService {
       throw new InvalidTransitionError(entry.status, "COMPLETED");
     }
 
-    const updated = await this.repository.updateQueueEntry(entryId, {
+    const updated = this.repository.updateQueueEntryIfStatus
+      ? await this.repository.updateQueueEntryIfStatus(entryId, entry.status, {
       status: "COMPLETED",
       completedAt: new Date(),
-    });
+    })
+      : await this.repository.updateQueueEntry(entryId, {
+        status: "COMPLETED",
+        completedAt: new Date(),
+      });
+
+    if (!updated) {
+      throw new InvalidTransitionError(entry.status, "COMPLETED");
+    }
 
     await this.addDomainEvent({
       queueId: entry.queueId,
@@ -405,9 +439,17 @@ export class QueueService {
       throw new InvalidTransitionError(entry.status, "NO_SHOW");
     }
 
-    const updated = await this.repository.updateQueueEntry(entryId, {
-      status: "NO_SHOW",
-    });
+    const updated = this.repository.updateQueueEntryIfStatus
+      ? await this.repository.updateQueueEntryIfStatus(entryId, entry.status, {
+        status: "NO_SHOW",
+      })
+      : await this.repository.updateQueueEntry(entryId, {
+        status: "NO_SHOW",
+      });
+
+    if (!updated) {
+      throw new InvalidTransitionError(entry.status, "NO_SHOW");
+    }
 
     await this.addDomainEvent({
       queueId: entry.queueId,
@@ -430,10 +472,19 @@ export class QueueService {
       throw new InvalidTransitionError(entry.status, "CANCELLED");
     }
 
-    const updated = await this.repository.updateQueueEntry(entryId, {
+    const updated = this.repository.updateQueueEntryIfStatus
+      ? await this.repository.updateQueueEntryIfStatus(entryId, entry.status, {
       status: "CANCELLED",
       cancelledAt: new Date(),
-    });
+    })
+      : await this.repository.updateQueueEntry(entryId, {
+        status: "CANCELLED",
+        cancelledAt: new Date(),
+      });
+
+    if (!updated) {
+      throw new InvalidTransitionError(entry.status, "CANCELLED");
+    }
 
     await this.addDomainEvent({
       queueId: entry.queueId,
@@ -456,7 +507,13 @@ export class QueueService {
       throw new InvalidTransitionError(queue.status, "PAUSED");
     }
 
-    const updated = await this.repository.updateQueueStatus(queueId, "PAUSED");
+    const updated = this.repository.updateQueueStatusIfStatus
+      ? await this.repository.updateQueueStatusIfStatus(queueId, queue.status, "PAUSED")
+      : await this.repository.updateQueueStatus(queueId, "PAUSED");
+
+    if (!updated) {
+      throw new InvalidTransitionError(queue.status, "PAUSED");
+    }
 
     await this.addDomainEvent({
       queueId,
@@ -478,7 +535,13 @@ export class QueueService {
       throw new InvalidTransitionError(queue.status, "ACTIVE");
     }
 
-    const updated = await this.repository.updateQueueStatus(queueId, "ACTIVE");
+    const updated = this.repository.updateQueueStatusIfStatus
+      ? await this.repository.updateQueueStatusIfStatus(queueId, queue.status, "ACTIVE")
+      : await this.repository.updateQueueStatus(queueId, "ACTIVE");
+
+    if (!updated) {
+      throw new InvalidTransitionError(queue.status, "ACTIVE");
+    }
 
     await this.addDomainEvent({
       queueId,

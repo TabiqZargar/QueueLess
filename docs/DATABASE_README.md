@@ -146,10 +146,14 @@ green while the database layer is added.
 
 ## 12. Current project status
 
-- Phases 1–9 complete (auth/RBAC, queue domain, server actions, realtime,
+- Phases 1–9 are complete (auth/RBAC, queue domain, server actions, realtime,
   notifications).
-- Database integration is the current milestone; no database code exists in the
-  repository yet — this document describes the target architecture.
-- Out of scope for the current milestone (and future phases unless explicitly
-  planned): analytics, ML, production authentication, and external notification
-  providers.
+- Prisma queue and notification repositories are implemented and wired when
+  `DATABASE_URL` is configured.
+- The queue repository uses PostgreSQL transactions and queue-row locks for
+  token allocation and race-sensitive state transitions.
+- Deterministic seed data is available through `npm run db:seed`.
+- Additional architecture and schema details are documented in
+  `docs/DATABASE_ARCHITECTURE.md` and `docs/DATABASE_SCHEMA.md`.
+- Out of scope for this milestone: analytics, ML, production authentication,
+  and external notification providers.

@@ -19,6 +19,12 @@ import {
 
 import { calculateEstimatedWait, countWaiting } from "./calculations";
 import { db } from "../../../prisma/db";
+import {
+  CannotCallNextPatientError,
+  QueueNotActiveError,
+  QueueNotFoundError,
+  QueuePausedError,
+} from "./errors";
 
 export class PrismaQueueRepository implements QueueRepository {
   async getQueue(queueId: string): Promise<Queue | null> {
@@ -89,6 +95,49 @@ export class PrismaQueueRepository implements QueueRepository {
     return this.toQueueEntry(entry);
   }
 
+  async joinQueueAtomic(data: CreateQueueEntryInput): Promise<QueueEntry> {
+    return db.transaction(async (tx) => {
+      const queues = await tx.query(
+        this.lockQueuePlan(data.queueId)
+      );
+      const queue = queues[0];
+      if (!queue) {
+        throw new QueueNotFoundError(data.queueId);
+      }
+      if (queue.status !== "ACTIVE") {
+        if (queue.status === "PAUSED") {
+          throw new QueuePausedError(data.queueId);
+        }
+        throw new QueueNotActiveError(data.queueId, queue.status);
+      }
+
+      const tokenRows = await tx.query(
+        db.raw.sql`SELECT COALESCE(MAX("tokenNumber"), 0) + 1 AS "nextToken"
+          FROM "public"."queueEntry"
+          WHERE "queueId" = ${data.queueId}`.returnsRow({
+            nextToken: "pg/int4@1",
+          }).build()
+      );
+      const nextToken = tokenRows[0]?.nextToken;
+      if (nextToken === undefined) {
+        throw new Error(`Unable to allocate a token for queue ${data.queueId}`);
+      }
+
+      const now = data.joinedAt.toISOString();
+      const entry = await tx.orm.public.QueueEntry.create({
+        id: crypto.randomUUID(),
+        queueId: data.queueId,
+        patientId: data.patientId,
+        tokenNumber: nextToken,
+        entryType: data.entryType,
+        status: data.status,
+        joinedAt: now,
+      });
+
+      return this.toQueueEntry(entry);
+    });
+  }
+
   async updateQueueEntry(
     entryId: string,
     data: UpdateQueueEntryInput
@@ -116,6 +165,40 @@ export class PrismaQueueRepository implements QueueRepository {
     return this.toQueueEntry(entry);
   }
 
+  async updateQueueEntryIfStatus(
+    entryId: string,
+    expectedStatus: QueueEntryStatus,
+    data: UpdateQueueEntryInput
+  ): Promise<QueueEntry | null> {
+    return db.transaction(async (tx) => {
+      const entry = await tx.orm.public.QueueEntry.where({ id: entryId }).first();
+      if (!entry) {
+        return null;
+      }
+
+      await tx.query(this.lockQueuePlan(entry.queueId));
+      const updated = await tx.orm.public.QueueEntry
+        .where({ id: entryId, status: expectedStatus })
+        .update({
+          ...(data.status !== undefined && { status: data.status }),
+          ...(data.calledAt !== undefined && {
+            calledAt: data.calledAt.toISOString(),
+          }),
+          ...(data.consultationStartedAt !== undefined && {
+            consultationStartedAt: data.consultationStartedAt.toISOString(),
+          }),
+          ...(data.completedAt !== undefined && {
+            completedAt: data.completedAt.toISOString(),
+          }),
+          ...(data.cancelledAt !== undefined && {
+            cancelledAt: data.cancelledAt.toISOString(),
+          }),
+        });
+
+      return updated ? this.toQueueEntry(updated) : null;
+    });
+  }
+
   async getNextWaitingEntry(
     queueId: string
   ): Promise<QueueEntry | null> {
@@ -125,6 +208,48 @@ export class PrismaQueueRepository implements QueueRepository {
       .first();
 
     return entry ? this.toQueueEntry(entry) : null;
+  }
+
+  async claimNextWaitingEntry(queueId: string): Promise<QueueEntry | null> {
+    return db.transaction(async (tx) => {
+      const queues = await tx.query(this.lockQueuePlan(queueId));
+      const queue = queues[0];
+      if (!queue) {
+        throw new QueueNotFoundError(queueId);
+      }
+      if (queue.status !== "ACTIVE") {
+        if (queue.status === "PAUSED") {
+          throw new QueuePausedError(queueId);
+        }
+        throw new QueueNotActiveError(queueId, queue.status);
+      }
+
+      const activeEntries = await tx.query(
+        db.raw.sql`SELECT "id"
+          FROM "public"."queueEntry"
+          WHERE "queueId" = ${queueId}
+            AND "status" IN ('CALLED', 'IN_CONSULTATION')
+          LIMIT 1`.returnsRow({ id: "pg/text@1" }).build()
+      );
+      if (activeEntries.length > 0) {
+        throw new CannotCallNextPatientError();
+      }
+
+      const next = await tx.orm.public.QueueEntry
+        .where({ queueId, status: "WAITING" })
+        .orderBy((entry) => entry.tokenNumber.asc())
+        .first();
+      if (!next) {
+        return null;
+      }
+
+      const now = new Date().toISOString();
+      const updated = await tx.orm.public.QueueEntry
+        .where({ id: next.id, status: "WAITING" })
+        .update({ status: "CALLED", calledAt: now });
+
+      return updated ? this.toQueueEntry(updated) : null;
+    });
   }
 
   async updateQueueStatus(
@@ -144,6 +269,26 @@ export class PrismaQueueRepository implements QueueRepository {
       });
 
     return this.toQueue(queue);
+  }
+
+  async updateQueueStatusIfStatus(
+    queueId: string,
+    expectedStatus: QueueStatus,
+    status: QueueStatus
+  ): Promise<Queue | null> {
+    return db.transaction(async (tx) => {
+      await tx.query(this.lockQueuePlan(queueId));
+      const now = new Date().toISOString();
+      const queue = await tx.orm.public.Queue
+        .where({ id: queueId, status: expectedStatus })
+        .update({
+          status,
+          updatedAt: now,
+          ...(status === "PAUSED" && { pausedAt: now }),
+        });
+
+      return queue ? this.toQueue(queue) : null;
+    });
   }
 
   async getDoctor(doctorId: string): Promise<Doctor | null> {
@@ -228,6 +373,17 @@ export class PrismaQueueRepository implements QueueRepository {
       .all();
 
     return events.map((event) => this.toQueueEvent(event));
+  }
+
+  private lockQueuePlan(queueId: string) {
+    return db.raw.sql`SELECT "id", "status", "currentToken"
+      FROM "public"."queue"
+      WHERE "id" = ${queueId}
+      FOR UPDATE`.returnsRow({
+        id: "pg/text@1",
+        status: "pg/text@1",
+        currentToken: "pg/int4@1",
+      }).build();
   }
 
   private toQueue(value: any): Queue {
