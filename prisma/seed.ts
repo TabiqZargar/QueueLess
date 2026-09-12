@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { db } from "./db.ts";
 
 const timestamp = "2026-09-11T09:00:00.000Z";
