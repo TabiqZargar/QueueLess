@@ -145,10 +145,10 @@ describe.skipIf(
       const joinedMessageA = notificationsA.find(
         (n) => n.type === "QUEUE_JOINED"
       )!.message;
-      // The Prisma repository does not populate the doctor, so the join
-      // message falls back to the clinic phrasing.
+      // The repository enriches queue details with the doctor, so the join
+      // message names the doctor.
       expect(joinedMessageA).toBe(
-        "You have joined the clinic queue. Your token is A-1."
+        "You have joined QueueLess Test Doctor's queue. Your token is A-1."
       );
       const calledMessageA = notificationsA.find(
         (n) => n.type === "PATIENT_CALLED"

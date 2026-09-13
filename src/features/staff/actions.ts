@@ -123,7 +123,7 @@ export async function addWalkInAction(input: {
       };
     }
 
-    const patient = getPatientStore().registerPatient({
+    const patient = await getPatientStore().registerPatient({
       name: parsed.data.name,
       phone: parsed.data.phone ?? "",
       clinicId: queue.clinicId,

@@ -34,11 +34,15 @@ vi.mock("next/headers", () => ({
 const SESSION_COOKIE_NAME = "queueless_session";
 
 let dbQueueService: QueueService;
+let dbQueueRepository: PrismaQueueRepository;
 let dbNotificationService: NotificationService;
 
 vi.mock("@/lib/queue/instance", () => ({
   get queueService() {
     return dbQueueService;
+  },
+  get queueRepository() {
+    return dbQueueRepository;
   },
   get getQueueService() {
     return () => dbQueueService;
@@ -62,6 +66,7 @@ function setEntryCookie(queueId: string, entryId: string) {
 beforeEach(() => {
   cookieStore.clear();
   dbQueueService = new QueueService(new PrismaQueueRepository());
+  dbQueueRepository = new PrismaQueueRepository();
   dbNotificationService = new NotificationService(
     new PrismaNotificationRepository()
   );

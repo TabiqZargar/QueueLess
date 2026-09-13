@@ -9,6 +9,7 @@ import {
 import {
   QueueRepository,
   CreateQueueEntryInput,
+  CreatePatientInput,
   UpdateQueueEntryInput,
   QueueStatistics,
   QueueWithDetails,
@@ -153,6 +154,27 @@ export class MockQueueRepository implements QueueRepository {
 
   async getPatient(patientId: string): Promise<Patient | null> {
     return this.patients.find((p) => p.id === patientId) ?? null;
+  }
+
+  async findPatientByPhone(phone: string): Promise<Patient | null> {
+    const normalized = phone.toLowerCase();
+    return (
+      this.patients.find((p) => p.phone.toLowerCase() === normalized) ?? null
+    );
+  }
+
+  async createPatient(data: CreatePatientInput): Promise<Patient> {
+    const patient: Patient = {
+      id: data.id,
+      name: data.name,
+      phone: data.phone,
+      email: data.email,
+      clinicId: data.clinicId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.patients.push(patient);
+    return patient;
   }
 
   async getQueueStatistics(queueId: string): Promise<QueueStatistics> {

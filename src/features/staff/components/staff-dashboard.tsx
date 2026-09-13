@@ -77,6 +77,7 @@ export function StaffDashboard({
         waitList={data.waitList}
         queueId={data.queue.id}
         queueActive={data.queueStatus === "ACTIVE"}
+        hasActivePatient={data.currentPatient !== null}
       />
 
       <section

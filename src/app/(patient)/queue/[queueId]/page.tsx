@@ -34,7 +34,14 @@ export default async function QueueOverviewPage({
     );
   }
 
-  const stats = await queueService.getQueueStats(params.queueId);
+  let stats: Awaited<ReturnType<typeof queueService.getQueueStats>> | null =
+    null;
+  try {
+    stats = await queueService.getQueueStats(params.queueId);
+  } catch {
+    // The queue may have been removed after the lookup above; render with
+    // neutral placeholders instead of a hard failure.
+  }
   const status = queue.status;
 
   return (
@@ -42,7 +49,9 @@ export default async function QueueOverviewPage({
       <h1 className="text-2xl font-bold text-gray-900">
         {queue.departmentName ?? "Queue"}
       </h1>
-      <p className="mt-1 text-gray-600">{queue.doctor?.displayName}</p>
+      <p className="mt-1 text-gray-600">
+        {queue.doctor?.displayName ?? "Doctor"}
+      </p>
       <div className="mt-2 flex items-center gap-3">
         <QueueStatusBadge status={status} />
         <QueueRealtimeSync queueId={queue.id} />
@@ -52,13 +61,13 @@ export default async function QueueOverviewPage({
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-gray-500">Now serving</p>
           <p className="mt-1 text-2xl font-bold text-primary-600">
-            {stats.currentToken ? formatQueueToken(stats.currentToken) : "—"}
+            {stats?.currentToken ? formatQueueToken(stats.currentToken) : "—"}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
           <p className="text-xs text-gray-500">Waiting</p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
-            {stats.totalWaiting} patient{stats.totalWaiting === 1 ? "" : "s"}
+            {stats?.totalWaiting ?? 0} patient{stats?.totalWaiting === 1 ? "" : "s"}
           </p>
         </div>
       </div>
@@ -66,7 +75,7 @@ export default async function QueueOverviewPage({
       <div className="mt-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <p className="text-xs text-gray-500">Estimated wait</p>
         <p className="mt-1 text-2xl font-bold text-gray-900">
-          {formatWaitTime(stats.estimatedWaitMinutes)}
+          {stats ? formatWaitTime(stats.estimatedWaitMinutes) : "—"}
         </p>
       </div>
 

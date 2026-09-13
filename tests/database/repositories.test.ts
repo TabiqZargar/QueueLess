@@ -17,6 +17,45 @@ describe.skipIf(
     expect(secondQueue?.id).toBe(firstQueue?.id);
   });
 
+  it("enriches queue details with doctor, department and clinic names", async () => {
+    const repository = new PrismaQueueRepository();
+
+    const queue = await repository.getQueueWithDetails("queue-1");
+
+    expect(queue?.id).toBe("queue-1");
+    expect(queue?.doctor?.displayName).toBe("Dr. Ahmed Khan");
+    expect(queue?.departmentName).toBe("General Medicine");
+    expect(queue?.clinicName).toBe("City Health Clinic");
+
+    const queues = await repository.listQueues();
+    const listed = queues.find((q) => q.id === "queue-1");
+    expect(listed?.departmentName).toBe("General Medicine");
+    expect(listed?.clinicName).toBe("City Health Clinic");
+  });
+
+  it("persists patients and finds them by phone", async () => {
+    const repository = new PrismaQueueRepository();
+    const patientId = `database-test-patient-${crypto.randomUUID()}`;
+    const phone = `+92-345-${Math.floor(Math.random() * 9000000 + 1000000)}`;
+
+    try {
+      const created = await repository.createPatient({
+        id: patientId,
+        name: "Database Test Patient",
+        phone,
+        clinicId: "clinic-1",
+      });
+
+      expect(created.id).toBe(patientId);
+      expect(created.phone).toBe(phone);
+
+      const found = await repository.findPatientByPhone(phone);
+      expect(found?.id).toBe(patientId);
+    } finally {
+      await db.orm.public.Patient.where({ id: patientId }).delete();
+    }
+  });
+
   it("deduplicates event notifications through the database constraint", async () => {
     const repository = new PrismaNotificationRepository();
     const eventId = `database-test-${crypto.randomUUID()}`;

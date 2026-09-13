@@ -39,6 +39,14 @@ export interface UpdateQueueEntryInput {
   cancelledAt?: Date;
 }
 
+export interface CreatePatientInput {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  clinicId: string;
+}
+
 export interface QueueRepository {
   getQueue(queueId: string): Promise<Queue | null>;
 
@@ -66,6 +74,10 @@ export interface QueueRepository {
   getDoctor(doctorId: string): Promise<Doctor | null>;
 
   getPatient(patientId: string): Promise<Patient | null>;
+
+  findPatientByPhone(phone: string): Promise<Patient | null>;
+
+  createPatient(data: CreatePatientInput): Promise<Patient>;
 
   getQueueStatistics(queueId: string): Promise<QueueStatistics>;
 

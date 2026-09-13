@@ -70,7 +70,8 @@ export function JoinQueueForm({ queues }: JoinQueueFormProps) {
         >
           {queues.map((q) => (
             <option key={q.id} value={q.id}>
-              {q.departmentName} — {q.doctor?.displayName}
+              {q.departmentName ?? "Queue"} —{" "}
+              {q.doctor?.displayName ?? "No doctor assigned"}
             </option>
           ))}
         </select>
@@ -84,10 +85,10 @@ export function JoinQueueForm({ queues }: JoinQueueFormProps) {
       {selectedQueue && (
         <div className="rounded-lg border border-primary-100 bg-primary-50 p-4">
           <span className="font-medium text-gray-900">
-            {selectedQueue.departmentName}
+            {selectedQueue.departmentName ?? "Queue"}
           </span>
           <p className="text-sm text-gray-600">
-            {selectedQueue.doctor?.displayName}
+            {selectedQueue.doctor?.displayName ?? "No doctor assigned"}
           </p>
           <p className="mt-2 text-xs font-medium text-primary-700">
             Join this queue to receive your token.
@@ -191,7 +192,7 @@ function ConfirmationView({
           <p className="font-medium text-gray-900">
             {queue?.departmentName ?? "Queue"}
           </p>
-          <p>{queue?.doctor?.displayName}</p>
+          <p>{queue?.doctor?.displayName ?? "No doctor assigned"}</p>
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3 text-left">

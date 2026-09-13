@@ -25,4 +25,5 @@ let queueServiceRef: QueueService;
 const notificationHandler = createNotificationHandler(() => queueServiceRef);
 queueServiceRef = new QueueService(repository, realtimePublisher, notificationHandler);
 
+export const queueRepository = repository;
 export const queueService = queueServiceRef;

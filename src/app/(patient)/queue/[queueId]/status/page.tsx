@@ -125,6 +125,21 @@ export default async function QueueStatusPage({
     );
   }
 
+  // A tracking entry whose queue has ended (e.g. completed/cancelled day)
+  // has nothing left to live-track.
+  if (data.queueStatus === "CLOSED") {
+    return (
+      <EntryState queueId={params.queueId}>
+        <h2 className="text-lg font-semibold text-gray-900">
+          This queue has ended
+        </h2>
+        <p className="mt-2 text-gray-600">
+          The queue is no longer accepting patients or tracking positions.
+        </p>
+      </EntryState>
+    );
+  }
+
   // WAITING (and REGISTERED) — the primary tracking state
   return (
     <StatusView

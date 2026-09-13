@@ -12,6 +12,7 @@ import {
 import {
   QueueRepository,
   CreateQueueEntryInput,
+  CreatePatientInput,
   UpdateQueueEntryInput,
   QueueStatistics,
   QueueWithDetails,
@@ -50,7 +51,7 @@ export class PrismaQueueRepository implements QueueRepository {
       .orderBy((queue) => queue.updatedAt.asc())
       .all();
 
-    return queues.map((queue) => this.toQueueWithDetails(queue));
+    return Promise.all(queues.map((queue) => this.toQueueWithDetails(queue)));
   }
 
   async getQueueEntries(queueId: string): Promise<QueueEntry[]> {
@@ -303,6 +304,27 @@ export class PrismaQueueRepository implements QueueRepository {
     return patient ? this.toPatient(patient) : null;
   }
 
+  async findPatientByPhone(phone: string): Promise<Patient | null> {
+    const patient = await db.orm.public.Patient.where({ phone }).first();
+
+    return patient ? this.toPatient(patient) : null;
+  }
+
+  async createPatient(data: CreatePatientInput): Promise<Patient> {
+    const now = new Date().toISOString();
+    const patient = await db.orm.public.Patient.create({
+      id: data.id,
+      name: data.name,
+      phone: data.phone,
+      email: data.email ?? null,
+      clinicId: data.clinicId,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    return this.toPatient(patient);
+  }
+
   async getQueueStatistics(
     queueId: string
   ): Promise<QueueStatistics> {
@@ -403,12 +425,24 @@ export class PrismaQueueRepository implements QueueRepository {
     };
   }
 
-  private toQueueWithDetails(value: any): QueueWithDetails {
+  private async toQueueWithDetails(value: any): Promise<QueueWithDetails> {
+    const [doctor, department, clinic] = await Promise.all([
+      value.doctorId
+        ? db.orm.public.Doctor.where({ id: value.doctorId }).first()
+        : Promise.resolve(null),
+      value.departmentId
+        ? db.orm.public.Department.where({ id: value.departmentId }).first()
+        : Promise.resolve(null),
+      value.clinicId
+        ? db.orm.public.Clinic.where({ id: value.clinicId }).first()
+        : Promise.resolve(null),
+    ]);
+
     return {
       ...this.toQueue(value),
-      doctor: undefined,
-      departmentName: undefined,
-      clinicName: undefined,
+      doctor: doctor ? this.toDoctor(doctor) : undefined,
+      departmentName: department?.name,
+      clinicName: clinic?.name,
     };
   }
 

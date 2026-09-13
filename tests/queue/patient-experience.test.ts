@@ -80,27 +80,28 @@ describe("getPatientStatus after a join", () => {
 });
 
 describe("patient store registration", () => {
-  it("registers a new patient", () => {
+  it("registers a new patient", async () => {
     const store = getPatientStore();
-    const patient = store.registerPatient({
+    const patient = await store.registerPatient({
       name: "Test Patient",
-      phone: "+92-333-5555555",
+      phone: `+92-333-555${Math.floor(Math.random() * 9000 + 1000)}`,
       clinicId: "clinic-1",
     });
     expect(patient.name).toBe("Test Patient");
     expect(patient.clinicId).toBe("clinic-1");
   });
 
-  it("returns an existing patient for the same phone", () => {
+  it("returns an existing patient for the same phone", async () => {
     const store = getPatientStore();
-    const first = store.registerPatient({
+    const phone = `+92-333-777${Math.floor(Math.random() * 9000 + 1000)}`;
+    const first = await store.registerPatient({
       name: "Duplicate Name",
-      phone: "+92-333-7777777",
+      phone,
       clinicId: "clinic-1",
     });
-    const second = store.registerPatient({
+    const second = await store.registerPatient({
       name: "Ignored Name",
-      phone: "+92-333-7777777",
+      phone,
       clinicId: "clinic-1",
     });
     expect(second.id).toBe(first.id);

@@ -76,7 +76,7 @@ export async function joinQueueAction(
       };
     }
 
-    const patient = getPatientStore().getOrCreatePatientForUser({
+    const patient = await getPatientStore().getOrCreatePatientForUser({
       userId: user.id,
       name,
       phone,

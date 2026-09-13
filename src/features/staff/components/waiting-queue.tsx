@@ -20,12 +20,14 @@ interface WaitingQueueCardProps {
   waitList: StaffWaitListVM[];
   queueId: string;
   queueActive: boolean;
+  hasActivePatient: boolean;
 }
 
 export function WaitingQueueCard({
   waitList,
   queueId,
   queueActive,
+  hasActivePatient,
 }: WaitingQueueCardProps) {
   const router = useRouter();
   const [pending, setPending] = useState<PendingAction>(null);
@@ -70,7 +72,12 @@ export function WaitingQueueCard({
           </p>
         </div>
         <Button
-          disabled={!queueActive || waitList.length === 0 || pending !== null}
+          disabled={
+            !queueActive ||
+            waitList.length === 0 ||
+            hasActivePatient ||
+            pending !== null
+          }
           onClick={() => runAction("call", () => callNextPatientAction(queueId))}
         >
           {pending === "call" ? "Calling..." : "Call Next Patient"}
@@ -82,6 +89,13 @@ export function WaitingQueueCard({
           <p className="mb-4 rounded-lg border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
             Queue is not active. New patients cannot be called until the queue
             is active.
+          </p>
+        )}
+
+        {queueActive && hasActivePatient && (
+          <p className="mb-4 rounded-lg border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
+            A patient is currently being served. Call the next patient after
+            the current consultation is completed.
           </p>
         )}
 

@@ -1,44 +1,35 @@
 import { Patient } from "@/types";
-import { mockPatients } from "@/mocks/clinics";
+import { queueRepository } from "@/lib/queue/instance";
+import { QueueRepository } from "@/lib/queue/repository";
 
 /**
- * Temporary in-memory patient registry used during development until the
- * real persistence/auth layer is integrated by the database contributor.
+ * Patient registration helpers layered on the queue repository.
  *
- * It is seeded with the mock patients and supports registering new patients
- * entered through the patient join flow. This is intentionally a simple,
- * easily-replaced mechanism and is NOT part of the queue repository contract.
+ * Patient records now go through the queue repository contract so they are
+ * persisted durably (PostgreSQL in production, the in-memory mock under
+ * tests) instead of a module-local mock registry. The store keeps the
+ * phone-dedup and authenticated-user get-or-create semantics on top of the
+ * repository primitives.
  */
 class PatientStore {
-  private patients: Patient[];
-  private nextPatientId = 1000;
+  constructor(private repository: QueueRepository) {}
 
-  constructor() {
-    this.patients = mockPatients.map((p) => ({ ...p }));
-  }
-
-  registerPatient(input: {
+  async registerPatient(input: {
     name: string;
     phone: string;
     clinicId: string;
-  }): Patient {
-    const existing = this.patients.find(
-      (p) => p.phone.toLowerCase() === input.phone.toLowerCase()
-    );
+  }): Promise<Patient> {
+    const existing = await this.repository.findPatientByPhone(input.phone);
     if (existing) {
       return existing;
     }
 
-    const patient: Patient = {
-      id: `patient-${this.nextPatientId++}`,
+    return this.repository.createPatient({
+      id: crypto.randomUUID(),
       name: input.name,
       phone: input.phone,
       clinicId: input.clinicId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.patients.push(patient);
-    return patient;
+    });
   }
 
   /**
@@ -46,36 +37,30 @@ class PatientStore {
    * necessary. The record id is the authenticated user's id so queue entries
    * are owned by the signed-in patient (ownership checks use this id).
    */
-  getOrCreatePatientForUser(input: {
+  async getOrCreatePatientForUser(input: {
     userId: string;
     name: string;
     phone: string;
     clinicId: string;
-  }): Patient {
-    const existing = this.patients.find((p) => p.id === input.userId);
+  }): Promise<Patient> {
+    const existing = await this.repository.getPatient(input.userId);
     if (existing) {
       return existing;
     }
 
-    const patient: Patient = {
+    return this.repository.createPatient({
       id: input.userId,
       name: input.name,
       phone: input.phone,
       clinicId: input.clinicId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    this.patients.push(patient);
-    return patient;
+    });
   }
 
-  getPatient(patientId: string): Patient | null {
-    return this.patients.find((p) => p.id === patientId) ?? null;
+  async getPatient(patientId: string): Promise<Patient | null> {
+    return this.repository.getPatient(patientId);
   }
 }
 
-const patientStore = new PatientStore();
-
 export function getPatientStore(): PatientStore {
-  return patientStore;
+  return new PatientStore(queueRepository);
 }
