@@ -1,4 +1,5 @@
 import { InMemoryRealtimeTransport } from "./in-memory-transport";
+import { PostgresRealtimeTransport } from "./postgres-transport";
 import {
   createQueuePublisher,
   QueueEventPublisher,
@@ -9,19 +10,29 @@ import type { RealtimeTransport } from "./transport";
 /**
  * Application-wide realtime wiring.
  *
- * The shared transport keeps events and sequence state consistent across every
- * server request within the running process. Like MockQueueRepository, the
- * in-memory transport is the development stand-in; the realtime/database
- * contributor swaps only the transport construction here.
+ * Two transports exist behind the same provider-neutral contract:
  *
- *   const transport = new RedisRealtimeTransport(redis);
+ * - `PostgresRealtimeTransport` (production) persists events in the shared
+ *   `queueRealtimeEvent` table, so sequences and replay are consistent across
+ *   application instances and survive process restarts.
+ * - `InMemoryRealtimeTransport` (development, tests) is the process-local
+ *   stand-in used when no database is configured.
+ *
+ * Selection mirrors `src/lib/queue/instance.ts`: PostgreSQL is used when a
+ * `DATABASE_URL` is available outside the test runtime; otherwise realtime
+ * falls back to memory. Because it is the same database, no separate broker,
+ * Redis, or WebSocket infrastructure is involved.
  *
  * The safe publisher guarantees a realtime failure can never fail or roll back
  * a queue mutation. QueueService (src/lib/queue/instance.ts) receives this
  * publisher via constructor injection.
  */
-export const realtimeTransport: RealtimeTransport =
-  new InMemoryRealtimeTransport();
+const realtimeTransport: RealtimeTransport =
+  process.env.NODE_ENV !== "test" && process.env.DATABASE_URL
+    ? new PostgresRealtimeTransport()
+    : new InMemoryRealtimeTransport();
+
+export { realtimeTransport };
 
 export const realtimePublisher: QueueEventPublisher = new SafeQueuePublisher(
   createQueuePublisher(realtimeTransport)

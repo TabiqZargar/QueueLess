@@ -36,6 +36,10 @@
       "model": "QueueEvent",
       "namespace": "public"
     },
+    "queueRealtimeEvent": {
+      "model": "QueueRealtimeEvent",
+      "namespace": "public"
+    },
     "user": {
       "model": "User",
       "namespace": "public"
@@ -254,6 +258,23 @@
               {
                 "name": "CANCELLED",
                 "value": "CANCELLED"
+              }
+            ]
+          },
+          "RealtimeEventType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "QUEUE_UPDATED",
+                "value": "QUEUE_UPDATED"
+              },
+              {
+                "name": "QUEUE_ENTRY_UPDATED",
+                "value": "QUEUE_ENTRY_UPDATED"
+              },
+              {
+                "name": "QUEUE_STATUS_CHANGED",
+                "value": "QUEUE_STATUS_CHANGED"
               }
             ]
           },
@@ -1172,6 +1193,21 @@
                   "model": "Notification",
                   "namespace": "public"
                 }
+              },
+              "realtimeEvents": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "queueId"
+                  ]
+                },
+                "to": {
+                  "model": "QueueRealtimeEvent",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -1542,6 +1578,99 @@
               },
               "namespaceId": "public",
               "table": "queueEvent"
+            }
+          },
+          "QueueRealtimeEvent": {
+            "fields": {
+              "entryId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "eventId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "eventType": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "RealtimeEventType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int8@1",
+                  "kind": "scalar"
+                }
+              },
+              "occurredAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "queueId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "queue": {
+                "cardinality": "N:1",
+                "on": {
+                  "localFields": [
+                    "queueId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Queue",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "entryId": {
+                  "column": "entryId"
+                },
+                "eventId": {
+                  "column": "eventId"
+                },
+                "eventType": {
+                  "column": "eventType"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "occurredAt": {
+                  "column": "occurredAt"
+                },
+                "queueId": {
+                  "column": "queueId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "queueRealtimeEvent"
             }
           },
           "User": {
@@ -2751,6 +2880,104 @@
               },
               "uniques": []
             },
+            "queueRealtimeEvent": {
+              "checks": [
+                {
+                  "expression": "\"eventType\" IN ('QUEUE_UPDATED', 'QUEUE_ENTRY_UPDATED', 'QUEUE_STATUS_CHANGED')",
+                  "name": "queueRealtimeEvent_eventType_check_f75daa8c",
+                  "prefix": "queueRealtimeEvent_eventType_check"
+                }
+              ],
+              "columns": {
+                "entryId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": true
+                },
+                "eventId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                },
+                "eventType": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "RealtimeEventType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "id": {
+                  "codecId": "pg/int8@1",
+                  "default": {
+                    "expression": "autoincrement()",
+                    "kind": "function"
+                  },
+                  "nativeType": "int8",
+                  "nullable": false
+                },
+                "occurredAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nativeType": "timestamptz",
+                  "nullable": false
+                },
+                "queueId": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "source": {
+                    "columns": [
+                      "queueId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queueRealtimeEvent"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "queue"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "queueId",
+                    "id"
+                  ],
+                  "name": "queueRealtimeEvent_queueId_id_idx_7700add7",
+                  "prefix": "queueRealtimeEvent_queueId_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "queueId"
+                  ],
+                  "name": "queueRealtimeEvent_queueId_idx_88ef1f02",
+                  "prefix": "queueRealtimeEvent_queueId_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "user": {
               "checks": [
                 {
@@ -2941,6 +3168,14 @@
                 "CANCELLED"
               ]
             },
+            "RealtimeEventType": {
+              "kind": "valueSet",
+              "values": [
+                "QUEUE_UPDATED",
+                "QUEUE_ENTRY_UPDATED",
+                "QUEUE_STATUS_CHANGED"
+              ]
+            },
             "UserRole": {
               "kind": "valueSet",
               "values": [
@@ -2956,7 +3191,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "475472fc0afac836d8e2c46285bafa03c9732928f1695fbed98df1ea26f5f268"
+    "storageHash": "60880a416b0568b289bcc0853b0284023930786570d1ca40c7ee122b4646a01c"
   },
   "capabilities": {
     "postgres": {

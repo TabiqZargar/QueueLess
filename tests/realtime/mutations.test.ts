@@ -179,7 +179,7 @@ describe("SafeQueuePublisher", () => {
     await expect(safe.publish("queue-1", event)).resolves.toBeUndefined();
     expect(safe.isHealthy()).toBe(false);
 
-    // Subsequent publishes become no-ops.
+    // Subsequent publishes become no-ops while within the cooldown window.
     await safe.publish("queue-1", event);
     expect(inner).toHaveBeenCalledTimes(1);
   });
@@ -190,6 +190,29 @@ describe("SafeQueuePublisher", () => {
     });
 
     await safe.publish("queue-1", createRealtimeEvent({ type: "QUEUE_UPDATED", queueId: "queue-1" }));
+    expect(safe.isHealthy()).toBe(true);
+  });
+
+  it("retries after the cooldown window expires", async () => {
+    const inner = vi.fn()
+      .mockRejectedValueOnce(new Error("transient"))
+      .mockResolvedValueOnce(undefined);
+
+    const safe = new SafeQueuePublisher({ publish: inner }, 50);
+    const event = createRealtimeEvent({ type: "QUEUE_UPDATED", queueId: "queue-1" });
+
+    // First call fails; safe latches.
+    await expect(safe.publish("queue-1", event)).resolves.toBeUndefined();
+    expect(safe.isHealthy()).toBe(false);
+
+    // Second call is a no-op (within cooldown).
+    await safe.publish("queue-1", event);
+    expect(inner).toHaveBeenCalledTimes(1);
+
+    // After the cooldown window, the next publish attempts again and succeeds.
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    await safe.publish("queue-1", event);
+    expect(inner).toHaveBeenCalledTimes(2);
     expect(safe.isHealthy()).toBe(true);
   });
 });

@@ -152,6 +152,7 @@ export async function createIsolatedQueue(
   }
 
   const cleanup = async () => {
+    await db.orm.public.QueueRealtimeEvent.where({ queueId }).deleteAll();
     await db.orm.public.Notification.where({ queueId }).deleteAll();
     await db.orm.public.QueueEvent.where({ queueId }).deleteAll();
     await db.orm.public.QueueEntry.where({ queueId }).deleteAll();
