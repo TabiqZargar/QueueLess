@@ -89,9 +89,10 @@ model Queue {
   clinic        Clinic         @relation(fields: [clinicId], references: [id])
   department    Department     @relation(fields: [departmentId], references: [id])
   doctor        Doctor         @relation(fields: [doctorId], references: [id])
-  entries       QueueEntry[]
-  events        QueueEvent[]
-  notifications Notification[]
+  entries         QueueEntry[]
+  events          QueueEvent[]
+  notifications   Notification[]
+  realtimeEvents  QueueRealtimeEvent[]
 
   @@index([clinicId])
   @@index([departmentId])
@@ -243,4 +244,23 @@ enum NotificationChannel {
   EMAIL
   SMS
   PUSH
+}
+
+enum RealtimeEventType {
+  QUEUE_UPDATED
+  QUEUE_ENTRY_UPDATED
+  QUEUE_STATUS_CHANGED
+}
+
+model QueueRealtimeEvent {
+  id         BigInt              @id @default(autoincrement())
+  queueId    String
+  eventType  RealtimeEventType
+  eventId    String
+  entryId    String?
+  occurredAt TimestamptzString   @default(now())
+
+  queue Queue @relation(fields: [queueId], references: [id])
+
+  @@index([queueId, id])
 }

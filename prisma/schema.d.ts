@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'475472fc0afac836d8e2c46285bafa03c9732928f1695fbed98df1ea26f5f268'>;
+  StorageHashBase<'60880a416b0568b289bcc0853b0284023930786570d1ca40c7ee122b4646a01c'>;
 export type ExecutionHash = ExecutionHashBase<string>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
@@ -354,6 +354,14 @@ export type FieldOutputTypes = {
       readonly timestamp: CodecTypes['pg/timestamptz-string@1']['output'];
       readonly metadata: CodecTypes['pg/json@1']['output'] | null;
     };
+    readonly QueueRealtimeEvent: {
+      readonly id: CodecTypes['pg/int8@1']['output'];
+      readonly queueId: CodecTypes['pg/text@1']['output'];
+      readonly eventType: 'QUEUE_UPDATED' | 'QUEUE_ENTRY_UPDATED' | 'QUEUE_STATUS_CHANGED';
+      readonly eventId: CodecTypes['pg/text@1']['output'];
+      readonly entryId: CodecTypes['pg/text@1']['output'] | null;
+      readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['output'];
+    };
     readonly User: {
       readonly id: CodecTypes['pg/text@1']['output'];
       readonly name: CodecTypes['pg/text@1']['output'];
@@ -481,6 +489,14 @@ export type FieldInputTypes = {
         | 'DOCTOR_DELAYED';
       readonly timestamp: CodecTypes['pg/timestamptz-string@1']['input'];
       readonly metadata: CodecTypes['pg/json@1']['input'] | null;
+    };
+    readonly QueueRealtimeEvent: {
+      readonly id: CodecTypes['pg/int8@1']['input'];
+      readonly queueId: CodecTypes['pg/text@1']['input'];
+      readonly eventType: 'QUEUE_UPDATED' | 'QUEUE_ENTRY_UPDATED' | 'QUEUE_STATUS_CHANGED';
+      readonly eventId: CodecTypes['pg/text@1']['input'];
+      readonly entryId: CodecTypes['pg/text@1']['input'] | null;
+      readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['input'];
     };
     readonly User: {
       readonly id: CodecTypes['pg/text@1']['input'];
@@ -610,6 +626,14 @@ export type StorageColumnTypes = {
       readonly queueId: CodecTypes['pg/text@1']['output'];
       readonly timestamp: CodecTypes['pg/timestamptz-string@1']['output'];
     };
+    readonly queueRealtimeEvent: {
+      readonly entryId: CodecTypes['pg/text@1']['output'] | null;
+      readonly eventId: CodecTypes['pg/text@1']['output'];
+      readonly eventType: 'QUEUE_UPDATED' | 'QUEUE_ENTRY_UPDATED' | 'QUEUE_STATUS_CHANGED';
+      readonly id: CodecTypes['pg/int8@1']['output'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['output'];
+      readonly queueId: CodecTypes['pg/text@1']['output'];
+    };
     readonly user: {
       readonly clinicId: CodecTypes['pg/text@1']['output'];
       readonly createdAt: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -737,6 +761,14 @@ export type StorageColumnInputTypes = {
       readonly queueEntryId: CodecTypes['pg/text@1']['input'] | null;
       readonly queueId: CodecTypes['pg/text@1']['input'];
       readonly timestamp: CodecTypes['pg/timestamptz-string@1']['input'];
+    };
+    readonly queueRealtimeEvent: {
+      readonly entryId: CodecTypes['pg/text@1']['input'] | null;
+      readonly eventId: CodecTypes['pg/text@1']['input'];
+      readonly eventType: 'QUEUE_UPDATED' | 'QUEUE_ENTRY_UPDATED' | 'QUEUE_STATUS_CHANGED';
+      readonly id: CodecTypes['pg/int8@1']['input'];
+      readonly occurredAt: CodecTypes['pg/timestamptz-string@1']['input'];
+      readonly queueId: CodecTypes['pg/text@1']['input'];
     };
     readonly user: {
       readonly clinicId: CodecTypes['pg/text@1']['input'];
@@ -1511,6 +1543,75 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly queueRealtimeEvent: {
+              columns: {
+                readonly id: {
+                  readonly nativeType: 'int8';
+                  readonly codecId: 'pg/int8@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                };
+                readonly queueId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly eventType: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly eventId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                };
+                readonly entryId: {
+                  readonly nativeType: 'text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                };
+                readonly occurredAt: {
+                  readonly nativeType: 'timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'queueRealtimeEvent_queueId_id_idx_7700add7';
+                  readonly prefix: 'queueRealtimeEvent_queueId_id_idx';
+                  readonly columns: readonly ['queueId', 'id'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'queueRealtimeEvent_queueId_idx_88ef1f02';
+                  readonly prefix: 'queueRealtimeEvent_queueId_idx';
+                  readonly columns: readonly ['queueId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'queueRealtimeEvent';
+                    readonly columns: readonly ['queueId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'queue';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly user: {
               columns: {
                 readonly id: {
@@ -1652,6 +1753,14 @@ type ContractBase = Omit<
                 'CANCELLED',
               ];
             };
+            readonly RealtimeEventType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly [
+                'QUEUE_UPDATED',
+                'QUEUE_ENTRY_UPDATED',
+                'QUEUE_STATUS_CHANGED',
+              ];
+            };
             readonly UserRole: {
               readonly kind: 'valueSet';
               readonly values: readonly ['PATIENT', 'STAFF', 'DOCTOR', 'ADMIN'];
@@ -1687,6 +1796,10 @@ type ContractBase = Omit<
     readonly notification: {
       readonly namespace: 'public' & NamespaceId;
       readonly model: 'Notification';
+    };
+    readonly queueRealtimeEvent: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'QueueRealtimeEvent';
     };
   };
   readonly domain: {
@@ -2277,6 +2390,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['queueId'];
                 };
               };
+              readonly realtimeEvents: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'QueueRealtimeEvent';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['queueId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'queue';
@@ -2503,6 +2627,62 @@ type ContractBase = Omit<
               };
             };
           };
+          readonly QueueRealtimeEvent: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int8@1' };
+              };
+              readonly queueId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly eventType: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly eventId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly entryId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly occurredAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+            };
+            readonly relations: {
+              readonly queue: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Queue';
+                };
+                readonly cardinality: 'N:1';
+                readonly on: {
+                  readonly localFields: readonly ['queueId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'queueRealtimeEvent';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly queueId: { readonly column: 'queueId' };
+                readonly eventType: { readonly column: 'eventType' };
+                readonly eventId: { readonly column: 'eventId' };
+                readonly entryId: { readonly column: 'entryId' };
+                readonly occurredAt: { readonly column: 'occurredAt' };
+              };
+            };
+          };
           readonly User: {
             readonly fields: {
               readonly id: {
@@ -2697,6 +2877,14 @@ type ContractBase = Omit<
               { readonly name: 'EMAIL'; readonly value: 'EMAIL' },
               { readonly name: 'SMS'; readonly value: 'SMS' },
               { readonly name: 'PUSH'; readonly value: 'PUSH' },
+            ];
+          };
+          readonly RealtimeEventType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'QUEUE_UPDATED'; readonly value: 'QUEUE_UPDATED' },
+              { readonly name: 'QUEUE_ENTRY_UPDATED'; readonly value: 'QUEUE_ENTRY_UPDATED' },
+              { readonly name: 'QUEUE_STATUS_CHANGED'; readonly value: 'QUEUE_STATUS_CHANGED' },
             ];
           };
         };

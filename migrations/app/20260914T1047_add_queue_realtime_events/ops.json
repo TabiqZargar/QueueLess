@@ -1,0 +1,161 @@
+[
+  {
+    "id": "table.queueRealtimeEvent",
+    "label": "Create table \"queueRealtimeEvent\"",
+    "summary": "Creates table \"queueRealtimeEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "queueRealtimeEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"queueRealtimeEvent\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"queueRealtimeEvent\"",
+        "sql": "CREATE TABLE \"public\".\"queueRealtimeEvent\" (\n  \"entryId\" text,\n  \"eventId\" text NOT NULL,\n  \"eventType\" text NOT NULL,\n  \"id\" BIGSERIAL NOT NULL,\n  \"occurredAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"queueId\" text NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"queueRealtimeEvent_eventType_check_f75daa8c\" CHECK (\"eventType\" IN ('QUEUE_UPDATED', 'QUEUE_ENTRY_UPDATED', 'QUEUE_STATUS_CHANGED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"queueRealtimeEvent\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.queueRealtimeEvent.queueRealtimeEvent_queueId_id_idx_7700add7",
+    "label": "Create index \"queueRealtimeEvent_queueId_id_idx_7700add7\" on \"queueRealtimeEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "queueRealtimeEvent_queueId_id_idx_7700add7",
+        "table": "queueRealtimeEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"queueRealtimeEvent_queueId_id_idx_7700add7\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent_queueId_id_idx_7700add7\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"queueRealtimeEvent_queueId_id_idx_7700add7\"",
+        "sql": "CREATE INDEX \"queueRealtimeEvent_queueId_id_idx_7700add7\" ON \"public\".\"queueRealtimeEvent\" (\"queueId\", \"id\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"queueRealtimeEvent_queueId_id_idx_7700add7\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent_queueId_id_idx_7700add7\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.queueRealtimeEvent.queueRealtimeEvent_queueId_idx_88ef1f02",
+    "label": "Create index \"queueRealtimeEvent_queueId_idx_88ef1f02\" on \"queueRealtimeEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "queueRealtimeEvent_queueId_idx_88ef1f02",
+        "table": "queueRealtimeEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"queueRealtimeEvent_queueId_idx_88ef1f02\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent_queueId_idx_88ef1f02\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"queueRealtimeEvent_queueId_idx_88ef1f02\"",
+        "sql": "CREATE INDEX \"queueRealtimeEvent_queueId_idx_88ef1f02\" ON \"public\".\"queueRealtimeEvent\" (\"queueId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"queueRealtimeEvent_queueId_idx_88ef1f02\" exists",
+        "sql": "SELECT (to_regclass($1)) IS NOT NULL AS \"result\"",
+        "params": [
+          "\"public\".\"queueRealtimeEvent_queueId_idx_88ef1f02\""
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.queueRealtimeEvent.queueRealtimeEvent_queueId_fkey",
+    "label": "Add foreign key \"queueRealtimeEvent_queueId_fkey\" on \"queueRealtimeEvent\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "queueRealtimeEvent_queueId_fkey",
+        "table": "queueRealtimeEvent"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"queueRealtimeEvent_queueId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "queueRealtimeEvent_queueId_fkey",
+          "public",
+          "\"public\".\"queueRealtimeEvent\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"queueRealtimeEvent_queueId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"queueRealtimeEvent\"\nADD CONSTRAINT \"queueRealtimeEvent_queueId_fkey\"\nFOREIGN KEY (\"queueId\")\nREFERENCES \"public\".\"queue\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"queueRealtimeEvent_queueId_fkey\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "queueRealtimeEvent_queueId_fkey",
+          "public",
+          "\"public\".\"queueRealtimeEvent\""
+        ]
+      }
+    ]
+  }
+]
