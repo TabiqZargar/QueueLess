@@ -15,6 +15,7 @@ import {
   UpdateQueueEntryInput,
   QueueStatistics,
   QueueWithDetails,
+  NON_TERMINAL_ENTRY_STATUSES,
 } from "./repository";
 
 import { calculateEstimatedWait, countWaiting } from "./calculations";
@@ -50,7 +51,7 @@ export class PrismaQueueRepository implements QueueRepository {
       .orderBy((queue) => queue.updatedAt.asc())
       .all();
 
-    return queues.map((queue) => this.toQueueWithDetails(queue));
+    return Promise.all(queues.map((queue) => this.toQueueWithDetails(queue)));
   }
 
   async getQueueEntries(queueId: string): Promise<QueueEntry[]> {
@@ -375,6 +376,16 @@ export class PrismaQueueRepository implements QueueRepository {
     return events.map((event) => this.toQueueEvent(event));
   }
 
+  async getActiveEntriesForPatient(patientId: string): Promise<QueueEntry[]> {
+    const entries = await db.orm.public.QueueEntry
+      .where((entry) => entry.patientId.eq(patientId))
+      .where((entry) => entry.status.in(NON_TERMINAL_ENTRY_STATUSES))
+      .orderBy((entry) => entry.joinedAt.desc())
+      .all();
+
+    return entries.map((entry) => this.toQueueEntry(entry));
+  }
+
   private lockQueuePlan(queueId: string) {
     return db.raw.sql`SELECT "id", "status", "currentToken"
       FROM "public"."queue"
@@ -403,12 +414,20 @@ export class PrismaQueueRepository implements QueueRepository {
     };
   }
 
-  private toQueueWithDetails(value: any): QueueWithDetails {
+  private async toQueueWithDetails(value: any): Promise<QueueWithDetails> {
+    const queue = this.toQueue(value);
+
+    const [doctorRow, departmentRow, clinicRow] = await Promise.all([
+      db.orm.public.Doctor.where({ id: queue.doctorId }).first(),
+      db.orm.public.Department.where({ id: queue.departmentId }).first(),
+      db.orm.public.Clinic.where({ id: queue.clinicId }).first(),
+    ]);
+
     return {
-      ...this.toQueue(value),
-      doctor: undefined,
-      departmentName: undefined,
-      clinicName: undefined,
+      ...queue,
+      doctor: doctorRow ? this.toDoctor(doctorRow) : undefined,
+      departmentName: departmentRow?.name,
+      clinicName: clinicRow?.name,
     };
   }
 

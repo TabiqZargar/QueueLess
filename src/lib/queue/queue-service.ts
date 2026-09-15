@@ -569,6 +569,17 @@ export class QueueService {
   }
 
   /**
+   * Returns the patient's active (non-terminal) queue entries ordered newest
+   * first. Used by the UI to resolve persistent registrations across browser
+   * sessions without relying on cookies.
+   */
+  async getActiveRegistrationsForPatient(
+    patientId: string
+  ): Promise<QueueEntry[]> {
+    return this.repository.getActiveEntriesForPatient(patientId);
+  }
+
+  /**
    * Records a domain event and forwards it to the notification handler. The
    * event is created via the repository (the durable record of the successful
    * mutation); the notification handler is then notified with exactly that

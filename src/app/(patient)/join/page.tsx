@@ -1,14 +1,27 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { queueService } from "@/lib/queue/instance";
 import { getCurrentUser } from "@/lib/auth/authorization";
+import { USER_ROLES } from "@/lib/auth/roles";
+import {
+  getCurrentPatientRegistration,
+  patientStatusPath,
+} from "@/features/patients/active-registration";
 import { JoinQueueForm } from "./join-queue-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function JoinQueuePage() {
+  const user = await getCurrentUser();
+
+  if (user?.role === USER_ROLES.PATIENT) {
+    const active = await getCurrentPatientRegistration(user.id);
+    const destination = patientStatusPath(active);
+    if (destination) redirect(destination);
+  }
+
   const queues = await queueService.listQueues();
   const joinableQueues = queues.filter((q) => q.status === "ACTIVE");
-  const user = await getCurrentUser();
 
   return (
     <div className="mx-auto max-w-md">

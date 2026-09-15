@@ -29,6 +29,7 @@ export interface SeedEntryOptions {
   patientId: string;
   tokenNumber: number;
   status: QueueEntryStatus;
+  joinedAt?: string;
   calledAt?: string;
   consultationStartedAt?: string;
   completedAt?: string;
@@ -142,7 +143,7 @@ export async function createIsolatedQueue(
       tokenNumber: entry.tokenNumber,
       entryType: "APPOINTMENT",
       status: entry.status,
-      joinedAt: timestamp,
+      joinedAt: entry.joinedAt ?? timestamp,
       calledAt: entry.calledAt ?? null,
       consultationStartedAt: entry.consultationStartedAt ?? null,
       completedAt: entry.completedAt ?? null,

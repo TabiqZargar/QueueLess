@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { getStoredEntryCookie } from "@/features/patients/entry-session";
-import {
-  getPatientStatus,
-  PatientStatusData,
-} from "@/features/patients/get-patient-status";
+import { guardPage } from "@/lib/auth/page-guard";
+import { USER_ROLES } from "@/lib/auth/roles";
+import { Forbidden } from "@/components/forbidden";
+import { queueService } from "@/lib/queue/instance";
+import { getPatientStatus } from "@/features/patients/get-patient-status";
+import type { PatientStatusData } from "@/features/patients/get-patient-status";
 import { Button } from "@/components/ui/button";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 import { CancelQueueButton } from "@/features/patients/cancel-queue-button";
@@ -16,20 +17,27 @@ export default async function QueueStatusPage({
 }: {
   params: { queueId: string };
 }) {
-  const stored = getStoredEntryCookie();
+  const guard = await guardPage(
+    [USER_ROLES.PATIENT],
+    `/queue/${params.queueId}/status`
+  );
 
-  if (!stored || stored.queueId !== params.queueId) {
-    return (
-      <NoEntry queueId={params.queueId} />
-    );
+  if (guard.status === "forbidden") {
+    return <Forbidden />;
   }
 
-  const data = await getPatientStatus(stored.entryId);
+  const registrations =
+    await queueService.getActiveRegistrationsForPatient(guard.user.id);
+
+  const entry = registrations.find((e) => e.queueId === params.queueId);
+  if (!entry) {
+    return <NoEntry queueId={params.queueId} />;
+  }
+
+  const data = await getPatientStatus(entry.id);
 
   if (data.entryNotFound) {
-    return (
-      <NoEntry queueId={params.queueId} />
-    );
+    return <NoEntry queueId={params.queueId} />;
   }
 
   if (data.queueNotFound) {

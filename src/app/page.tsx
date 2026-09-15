@@ -1,10 +1,22 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth/authorization";
 import { ROLE_LABELS } from "@/lib/auth/roles";
 import { SessionNav } from "@/components/session/session-nav";
+import {
+  getCurrentPatientRegistration,
+  patientStatusPath,
+} from "@/features/patients/active-registration";
+import { USER_ROLES } from "@/lib/auth/roles";
 
 export default async function HomePage() {
   const user = await getCurrentUser();
+
+  if (user?.role === USER_ROLES.PATIENT) {
+    const active = await getCurrentPatientRegistration(user.id);
+    const destination = patientStatusPath(active);
+    if (destination) redirect(destination);
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center">
