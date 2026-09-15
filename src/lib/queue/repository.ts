@@ -8,6 +8,17 @@ import {
   QueueStatus,
 } from "@/types";
 
+/**
+ * Entry statuses that represent an active, unresolved patient journey.
+ * Used by `getActiveEntriesForPatient` to scope recovery queries.
+ */
+export const NON_TERMINAL_ENTRY_STATUSES: QueueEntryStatus[] = [
+  "REGISTERED",
+  "WAITING",
+  "CALLED",
+  "IN_CONSULTATION",
+];
+
 export interface QueueWithDetails extends Queue {
   doctor?: Doctor;
   departmentName?: string;
@@ -72,6 +83,13 @@ export interface QueueRepository {
   addQueueEvent(event: Omit<QueueEvent, "id" | "timestamp">): Promise<QueueEvent>;
 
   getQueueEvents(queueId: string): Promise<QueueEvent[]>;
+
+  /**
+   * Returns all non-terminal entries for a given patient, ordered newest first.
+   * The patientId is the application-level patient identifier (typically the
+   * same as the authenticated user id in mock auth).
+   */
+  getActiveEntriesForPatient(patientId: string): Promise<QueueEntry[]>;
 
   /** Optional database-backed atomic operations. */
   joinQueueAtomic?(data: CreateQueueEntryInput): Promise<QueueEntry>;

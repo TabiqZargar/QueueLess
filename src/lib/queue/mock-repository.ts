@@ -12,6 +12,7 @@ import {
   UpdateQueueEntryInput,
   QueueStatistics,
   QueueWithDetails,
+  NON_TERMINAL_ENTRY_STATUSES,
 } from "./repository";
 import { mockDepartments, mockDoctors, mockPatients } from "@/mocks/clinics";
 import { mockClinics } from "@/mocks/clinics";
@@ -210,6 +211,16 @@ export class MockQueueRepository implements QueueRepository {
     return this.events
       .filter((e) => e.queueId === queueId)
       .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+  }
+
+  async getActiveEntriesForPatient(patientId: string): Promise<QueueEntry[]> {
+    return this.entries
+      .filter(
+        (e) =>
+          e.patientId === patientId &&
+          NON_TERMINAL_ENTRY_STATUSES.includes(e.status)
+      )
+      .sort((a, b) => b.joinedAt.getTime() - a.joinedAt.getTime());
   }
 }
 
