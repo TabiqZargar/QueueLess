@@ -29,10 +29,10 @@ export function StaffDashboard({
     return (
       <div>
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+          <h1 className="text-headline-xl text-on-surface">Staff Dashboard</h1>
           <RealtimeStatus status={realtimeStatus} />
         </div>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-body-md text-on-surface-variant">
           {queues.length === 0
             ? "No queues have been created yet."
             : "Select a queue from the list to get started."}
@@ -51,14 +51,16 @@ export function StaffDashboard({
       <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
         <div>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
+            <h1 className="text-headline-xl text-on-surface">Staff Dashboard</h1>
             <RealtimeStatus status={realtimeStatus} />
           </div>
-          <p className="mt-1 text-sm text-gray-600">
+          <p className="mt-1 text-body-md text-on-surface-variant">
             Operate the queue, manage patients, and track activity.
           </p>
         </div>
-        <QueueSelector queues={queues} selectedQueueId={selectedQueueId} />
+        <div className="w-full lg:w-80">
+          <QueueSelector queues={queues} selectedQueueId={selectedQueueId} />
+        </div>
       </div>
 
       <QueueIdentity queue={data.queue} />
@@ -80,13 +82,13 @@ export function StaffDashboard({
       />
 
       <section
-        className="rounded-lg border border-gray-200 bg-white shadow-sm"
+        className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
         aria-labelledby="queue-activity-heading"
       >
-        <div className="border-b border-gray-200 px-6 py-4">
+        <div className="border-b border-outline-variant px-6 py-4">
           <h2
             id="queue-activity-heading"
-            className="text-lg font-semibold text-gray-900"
+            className="text-headline-sm text-on-surface"
           >
             Queue Activity
           </h2>

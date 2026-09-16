@@ -53,20 +53,22 @@ export function WaitingQueueCard({
 
   return (
     <section
-      className="rounded-lg border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
       aria-labelledby="waiting-queue-heading"
     >
-      <div className="flex flex-col gap-3 border-b border-gray-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-outline-variant px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2
             id="waiting-queue-heading"
-            className="text-lg font-semibold text-gray-900"
+            className="text-headline-sm text-on-surface"
           >
             Waiting Queue
           </h2>
-          <p className="mt-0.5 text-sm text-gray-500">
+          <p className="mt-0.5 text-body-sm text-on-surface-variant">
             {waitList.length} waiting
-            {waitList[0] ? ` · next up ${formatQueueToken(waitList[0].tokenNumber)}` : ""}
+            {waitList[0]
+              ? ` · next up ${formatQueueToken(waitList[0].tokenNumber)}`
+              : ""}
           </p>
         </div>
         <Button
@@ -79,7 +81,7 @@ export function WaitingQueueCard({
 
       <div className="px-6 py-4">
         {!queueActive && (
-          <p className="mb-4 rounded-lg border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
+          <p className="mb-4 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-body-sm text-warning-800">
             Queue is not active. New patients cannot be called until the queue
             is active.
           </p>
@@ -93,31 +95,32 @@ export function WaitingQueueCard({
 
         {waitList.length === 0 ? (
           <div className="py-8 text-center">
-            <p className="text-sm text-gray-500">
+            <p className="text-body-sm text-on-surface-variant">
               No patients are currently waiting.
             </p>
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-label-sm text-on-surface-variant/70">
               Use “Add Walk-in” to register a new patient, or wait for the next
               join.
             </p>
           </div>
         ) : (
-          <ul className="divide-y divide-gray-100">
+          <ul className="divide-y divide-outline-variant">
             {waitList.map((entry) => (
               <li
                 key={entry.entryId}
                 className="flex flex-col gap-2 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 items-center gap-3">
-                  <span className="w-16 shrink-0 text-2xl font-bold text-gray-900">
+                  <span className="w-16 shrink-0 text-headline-md font-bold text-on-surface">
                     {formatQueueToken(entry.tokenNumber)}
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-gray-900">
+                    <p className="truncate text-body-md font-medium text-on-surface">
                       {entry.patientName}
                     </p>
-                    <p className="text-xs text-gray-500">
-                      Position {entry.position} · {formatWaitTime(entry.estimatedWaitMinutes)}
+                    <p className="text-label-sm text-on-surface-variant">
+                      Position {entry.position} ·{" "}
+                      {formatWaitTime(entry.estimatedWaitMinutes)}
                       {entry.entryType === "WALK_IN" && (
                         <Badge variant="info" className="ml-2">
                           Walk-in
@@ -130,11 +133,11 @@ export function WaitingQueueCard({
                 <div className="shrink-0">
                   {confirming?.entryId === entry.entryId ? (
                     <div
-                      className="rounded-lg border border-danger-200 bg-danger-50 p-3"
+                      className="rounded-xl border border-danger-200 bg-error-container p-3"
                       role="group"
                       aria-label={`Confirm ${confirming.action} for ${formatQueueToken(entry.tokenNumber)}`}
                     >
-                      <p className="text-xs font-medium text-danger-800">
+                      <p className="text-label-sm font-medium text-on-error-container">
                         {confirming.action === "noShow"
                           ? `Mark ${formatQueueToken(entry.tokenNumber)} as no-show?`
                           : `Cancel ${formatQueueToken(entry.tokenNumber)}?`}
@@ -177,7 +180,10 @@ export function WaitingQueueCard({
                         size="sm"
                         disabled={pending !== null}
                         onClick={() =>
-                          setConfirming({ entryId: entry.entryId, action: "noShow" })
+                          setConfirming({
+                            entryId: entry.entryId,
+                            action: "noShow",
+                          })
                         }
                       >
                         No-Show
@@ -187,7 +193,10 @@ export function WaitingQueueCard({
                         size="sm"
                         disabled={pending !== null}
                         onClick={() =>
-                          setConfirming({ entryId: entry.entryId, action: "cancel" })
+                          setConfirming({
+                            entryId: entry.entryId,
+                            action: "cancel",
+                          })
                         }
                       >
                         Cancel

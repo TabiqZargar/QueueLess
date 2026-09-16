@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
 import { formatQueueToken } from "@/lib/utils";
 import {
   completeConsultationAction,
@@ -63,22 +64,16 @@ export function CurrentPatientCard({
   if (!currentPatient) {
     return (
       <section
-        className="rounded-xl border border-gray-200 bg-white shadow-sm"
+        className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
         aria-labelledby="doctor-current-patient-heading"
       >
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2
-            id="doctor-current-patient-heading"
-            className="text-lg font-semibold text-gray-900"
-          >
-            Current Patient
-          </h2>
-        </div>
+        <PanelHeader />
         <div className="px-6 py-12 text-center">
-          <p className="text-base font-medium text-gray-700">
+          <Icon name="stethoscope" size="xl" className="mx-auto text-outline" />
+          <p className="mt-3 text-body-lg font-medium text-on-surface">
             No patient currently assigned.
           </p>
-          <p className="mt-2 text-sm text-gray-500">
+          <p className="mt-1 text-body-sm text-on-surface-variant">
             Waiting for the next patient to be called.
           </p>
         </div>
@@ -97,30 +92,23 @@ export function CurrentPatientCard({
 
   return (
     <section
-      className="rounded-xl border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
       aria-labelledby="doctor-current-patient-heading"
     >
-      <div className="border-b border-gray-200 px-6 py-4">
-        <h2
-          id="doctor-current-patient-heading"
-          className="text-lg font-semibold text-gray-900"
-        >
-          Current Patient
-        </h2>
-      </div>
+      <PanelHeader />
       <div className="px-6 py-6">
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-3">
-              <span className="text-4xl font-bold text-gray-900">
+              <span className="text-headline-xl font-bold text-primary-700">
                 {formatQueueToken(currentPatient.tokenNumber)}
               </span>
               <Badge variant={statusVariant}>{statusLabel}</Badge>
             </div>
-            <p className="mt-2 text-base font-medium text-gray-700">
+            <p className="mt-2 text-body-lg font-medium text-on-surface">
               {currentPatient.patientName}
             </p>
-            <p className="mt-0.5 text-sm text-gray-500">
+            <p className="mt-0.5 text-body-sm text-on-surface-variant">
               {isCalled
                 ? currentPatient.calledAt
                   ? `Called ${formatElapsed(currentPatient.calledAt)}`
@@ -150,7 +138,7 @@ export function CurrentPatientCard({
             )}
 
             {currentPatient.status === "CALLED" && !canStart && (
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-on-surface-variant">
                 Queue is paused. Starting a consultation is available once staff
                 resume operations.
               </p>
@@ -174,7 +162,7 @@ export function CurrentPatientCard({
             )}
 
             {currentPatient.status === "IN_CONSULTATION" && !canComplete && (
-              <p className="text-sm text-gray-500">
+              <p className="text-body-sm text-on-surface-variant">
                 This queue is no longer active. No consultation actions are
                 available.
               </p>
@@ -189,5 +177,18 @@ export function CurrentPatientCard({
         )}
       </div>
     </section>
+  );
+}
+
+function PanelHeader() {
+  return (
+    <div className="border-b border-outline-variant px-6 py-4">
+      <h2
+        id="doctor-current-patient-heading"
+        className="text-headline-sm text-on-surface"
+      >
+        Current Patient
+      </h2>
+    </div>
   );
 }

@@ -11,24 +11,24 @@ export function formatEventTime(date: Date): string {
 export function QueueActivity({ items }: { items: QueueActivityItem[] }) {
   if (items.length === 0) {
     return (
-      <p className="py-4 text-center text-sm text-gray-500">
+      <p className="py-4 text-center text-body-sm text-on-surface-variant">
         No activity recorded yet.
       </p>
     );
   }
 
   return (
-    <ol className="divide-y divide-gray-100">
+    <ol className="divide-y divide-outline-variant">
       {items.map((item) => (
         <li key={item.id} className="flex items-center gap-3 py-2.5">
-          <span className="text-xs tabular-nums text-gray-400">
+          <span className="text-label-sm tabular-nums text-on-surface-variant/70">
             {formatEventTime(item.timestamp)}
           </span>
-          <span className="min-w-0 flex-1 truncate text-sm text-gray-700">
+          <span className="min-w-0 flex-1 truncate text-body-sm text-on-surface">
             {item.label}
           </span>
           {item.token && (
-            <span className="font-mono text-xs font-medium text-gray-500">
+            <span className="font-mono text-label-sm font-medium text-on-surface-variant">
               {item.token}
             </span>
           )}

@@ -120,12 +120,13 @@ async function main() {
     ["entry-1", "queue-1", "patient-1", 18, "COMPLETED", "2026-09-11T07:00:00.000Z"],
     ["entry-2", "queue-1", "patient-2", 19, "COMPLETED", "2026-09-11T07:05:00.000Z"],
     ["entry-3", "queue-1", "patient-3", 20, "COMPLETED", "2026-09-11T07:10:00.000Z"],
-    ["entry-4", "queue-1", "patient-1", 21, "IN_CONSULTATION", "2026-09-11T07:20:00.000Z"],
+    ["entry-4", "queue-1", "patient-1", 21, "COMPLETED", "2026-09-11T07:20:00.000Z"],
     ["entry-5", "queue-1", "patient-2", 22, "WAITING", "2026-09-11T07:25:00.000Z"],
     ["entry-6", "queue-1", "patient-3", 23, "WAITING", "2026-09-11T07:30:00.000Z"],
     ["entry-7", "queue-2", "patient-2", 16, "WAITING", "2026-09-11T07:35:00.000Z"],
   ] as const;
   for (const [id, queueId, patientId, tokenNumber, status, joinedAt] of entries) {
+    const wentThroughConsultation = status === "COMPLETED";
     await ensure(db.orm.public.QueueEntry, id, {
       queueId,
       patientId,
@@ -133,8 +134,8 @@ async function main() {
       entryType: "APPOINTMENT",
       status,
       joinedAt,
-      calledAt: status === "COMPLETED" || status === "IN_CONSULTATION" ? timestamp : null,
-      consultationStartedAt: status === "COMPLETED" || status === "IN_CONSULTATION" ? timestamp : null,
+      calledAt: wentThroughConsultation ? timestamp : null,
+      consultationStartedAt: wentThroughConsultation ? timestamp : null,
       completedAt: status === "COMPLETED" ? timestamp : null,
       cancelledAt: null,
     });

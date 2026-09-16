@@ -245,6 +245,19 @@ describe("patient server-action authorization", () => {
     expect(cookieStore.has(ENTRY_COOKIE_NAME)).toBe(false);
   });
 
+  it("cancels the patient's most recent active entry when the cookie is missing", async () => {
+    setSession("patient-1");
+    // patient-1 owns entry-7 (WAITING, joined earlier) and entry-10 (WAITING,
+    // joined later). No entry cookie is set, so cancel must fall back to the
+    // patient's active registration from the data layer.
+    expect(cookieStore.has(ENTRY_COOKIE_NAME)).toBe(false);
+
+    const result = await patientActions.cancelQueueEntryAction();
+    expect(result.error).toBeUndefined();
+    expect(result.success).toBe(true);
+    expect(cookieStore.has(ENTRY_COOKIE_NAME)).toBe(false);
+  });
+
   it("requires sign-in before cancelling an entry", async () => {
     setEntryCookie("entry-7");
     const result = await patientActions.cancelQueueEntryAction();

@@ -1,36 +1,54 @@
 import type { StaffStatusCounts, StaffDashboardData } from "../get-staff-data";
+import { Icon } from "@/components/ui/icon";
 
 const STAT_CARDS: {
   key: keyof StaffStatusCounts;
   label: string;
-  className: string;
+  icon: string;
+  valueClass: string;
 }[] = [
-  { key: "waiting", label: "Waiting", className: "text-primary-600" },
-  { key: "called", label: "Called", className: "text-warning-600" },
+  {
+    key: "waiting",
+    label: "Waiting",
+    icon: "group",
+    valueClass: "text-primary-600",
+  },
+  {
+    key: "called",
+    label: "Called",
+    icon: "campaign",
+    valueClass: "text-warning-600",
+  },
   {
     key: "inConsultation",
     label: "Serving",
-    className: "text-success-600",
+    icon: "stethoscope",
+    valueClass: "text-tertiary-600",
   },
   {
     key: "completed",
     label: "Completed",
-    className: "text-gray-900",
+    icon: "task_alt",
+    valueClass: "text-on-surface",
   },
 ];
 
 export function QueueStats({ data }: { data: StaffDashboardData }) {
   return (
-    <section aria-label="Queue statistics" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {STAT_CARDS.map(({ key, label, className }) => (
+    <section
+      aria-label="Queue statistics"
+      className="grid grid-cols-2 gap-3 lg:grid-cols-4"
+    >
+      {STAT_CARDS.map(({ key, label, icon, valueClass }) => (
         <div
           key={key}
-          className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm"
+          className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm"
         >
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
-            {label}
-          </p>
-          <p className={`mt-1 text-4xl font-bold ${className}`}>
+          <div className="flex items-center gap-2 text-on-surface-variant">
+            <Icon name={icon} size="sm" />
+            <p className="text-label-sm">{label}</p>
+          </div>
+          <p className={`mt-2 text-headline-lg ${valueClass}`}>
             {data.counts[key]}
           </p>
         </div>

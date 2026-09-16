@@ -7,10 +7,10 @@ export function FeedbackMessage({ feedback }: { feedback: Feedback }) {
   return (
     <p
       role={feedback.kind === "error" ? "alert" : "status"}
-      className={`rounded-lg border px-4 py-3 text-sm ${
+      className={`rounded-xl border px-4 py-3 text-body-sm ${
         feedback.kind === "error"
-          ? "border-danger-200 bg-danger-50 text-danger-700"
-          : "border-success-200 bg-success-50 text-success-700"
+          ? "border-danger-200 bg-error-container text-on-error-container"
+          : "border-success-200 bg-tertiary-container text-on-tertiary-container"
       }`}
     >
       {feedback.text}
