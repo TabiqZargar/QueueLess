@@ -17,24 +17,24 @@ export function QueueSummary({ counts }: QueueSummaryProps) {
 
   return (
     <section
-      className="rounded-lg border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
       aria-labelledby="doctor-summary-heading"
     >
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-outline-variant px-6 py-4">
         <h2
           id="doctor-summary-heading"
-          className="text-lg font-semibold text-gray-900"
+          className="text-headline-sm text-on-surface"
         >
           Queue Summary
         </h2>
       </div>
-      <dl className="grid grid-cols-3 divide-x divide-gray-100">
+      <dl className="grid grid-cols-3 divide-x divide-outline-variant">
         {items.map((item) => (
           <div key={item.label} className="flex flex-col px-4 py-6 text-center">
-            <dt className="order-2 mt-1 text-xs font-medium uppercase tracking-wide text-gray-500">
+            <dt className="order-2 mt-1 text-label-sm text-on-surface-variant">
               {item.label}
             </dt>
-            <dd className="order-1 text-2xl font-bold text-gray-900">
+            <dd className="order-1 text-headline-md font-bold text-on-surface">
               {item.value}
             </dd>
           </div>

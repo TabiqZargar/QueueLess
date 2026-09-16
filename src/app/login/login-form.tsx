@@ -56,17 +56,17 @@ export function LoginForm({ next }: { next?: string }) {
           type="button"
           onClick={() => handleLogin(option.role)}
           disabled={pendingRole !== null}
-          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-white px-5 py-4 text-left shadow-sm transition hover:border-primary-300 hover:bg-primary-50 disabled:opacity-50 focus-ring"
+          className="flex w-full items-center justify-between rounded-xl border border-outline-variant bg-white px-5 py-4 text-left shadow-sm transition hover:border-primary-300 hover:bg-primary-container/40 disabled:opacity-50 focus-ring"
         >
           <span>
-            <span className="block font-medium text-gray-900">
+            <span className="block font-medium text-on-surface">
               Continue as {ROLE_LABELS[option.role]}
             </span>
-            <span className="mt-0.5 block text-sm text-gray-500">
+            <span className="mt-0.5 block text-body-sm text-on-surface-variant">
               {option.description}
             </span>
           </span>
-          <span className="text-sm font-medium text-primary-600">
+          <span className="text-label-md font-medium text-primary-600">
             {pendingRole === option.role ? "Signing in..." : "Sign in →"}
           </span>
         </button>
@@ -75,16 +75,16 @@ export function LoginForm({ next }: { next?: string }) {
       {error && (
         <div
           role="alert"
-          className="rounded-lg border border-danger-200 bg-danger-50 p-4 text-sm text-danger-700"
+          className="rounded-xl border border-danger-200 bg-error-container p-4 text-body-sm text-on-error-container"
         >
           {error}
         </div>
       )}
 
-      <div className="pt-2 text-center text-sm">
+      <div className="pt-2 text-center text-body-sm">
         <Link
           href="/"
-          className="text-primary-600 underline hover:text-primary-700 focus-ring rounded"
+          className="rounded text-primary-600 underline hover:text-primary-700 focus-ring"
         >
           Back to home
         </Link>

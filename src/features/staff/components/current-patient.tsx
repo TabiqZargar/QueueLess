@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { StaffCurrentPatientVM } from "../get-staff-data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Icon } from "@/components/ui/icon";
 import { formatQueueToken, formatWaitTime } from "@/lib/utils";
 import {
   markNoShowAction,
@@ -47,42 +48,46 @@ export function CurrentPatientPanel({
 
   if (!currentPatient) {
     return (
-      <section className="rounded-lg border border-gray-200 bg-white shadow-sm" aria-labelledby="current-patient-heading">
-        <div className="border-b border-gray-200 px-6 py-4">
-          <h2 id="current-patient-heading" className="text-lg font-semibold text-gray-900">
-            Current Patient
-          </h2>
-        </div>
-        <div className="px-6 py-8 text-center text-sm text-gray-500">
-          <p>No patient currently being served.</p>
-          <p className="mt-1 text-xs text-gray-400">
-            Estimated wait for waiting patients: {formatWaitTime(estimatedWaitMinutes)}.
+      <section
+        className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
+        aria-labelledby="current-patient-heading"
+      >
+        <PanelHeader />
+        <div className="px-6 py-10 text-center text-body-sm text-on-surface-variant">
+          <Icon name="support_agent" size="xl" className="mx-auto text-outline" />
+          <p className="mt-3 font-medium text-on-surface">
+            No patient currently being served.
+          </p>
+          <p className="mt-1 text-label-sm text-on-surface-variant">
+            Estimated wait for waiting patients:{" "}
+            {formatWaitTime(estimatedWaitMinutes)}.
           </p>
         </div>
       </section>
     );
   }
 
-  const statusLabel = currentPatient.status === "CALLED" ? "Called" : "In consultation";
-  const statusVariant = currentPatient.status === "CALLED" ? "warning" : "info";
+  const statusLabel =
+    currentPatient.status === "CALLED" ? "Called" : "In consultation";
+  const statusVariant =
+    currentPatient.status === "CALLED" ? "warning" : "info";
 
   return (
-    <section className="rounded-lg border border-gray-200 bg-white shadow-sm" aria-labelledby="current-patient-heading">
-      <div className="border-b border-gray-200 px-6 py-4">
-        <h2 id="current-patient-heading" className="text-lg font-semibold text-gray-900">
-          Current Patient
-        </h2>
-      </div>
+    <section
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
+      aria-labelledby="current-patient-heading"
+    >
+      <PanelHeader />
       <div className="px-6 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-3xl font-bold text-gray-900">
+            <p className="text-headline-lg text-primary-700">
               {formatQueueToken(currentPatient.tokenNumber)}
             </p>
-            <p className="mt-1 text-sm text-gray-600">
+            <p className="mt-1 text-body-md font-medium text-on-surface">
               {currentPatient.patientName}
             </p>
-            <p className="mt-0.5 text-xs text-gray-400">
+            <p className="mt-0.5 text-label-sm text-on-surface-variant">
               {currentPatient.entryType === "WALK_IN" ? "Walk-in" : "Appointment"}
             </p>
           </div>
@@ -102,11 +107,16 @@ export function CurrentPatientPanel({
                   Mark No-Show
                 </Button>
               ) : (
-                <div className="rounded-lg border border-danger-200 bg-danger-50 p-4" role="group" aria-label="Confirm no-show">
-                  <p className="text-sm font-medium text-danger-800">
-                    Mark {formatQueueToken(currentPatient.tokenNumber)} as no-show?
+                <div
+                  className="rounded-xl border border-danger-200 bg-error-container p-4"
+                  role="group"
+                  aria-label="Confirm no-show"
+                >
+                  <p className="text-body-sm font-medium text-on-error-container">
+                    Mark {formatQueueToken(currentPatient.tokenNumber)} as
+                    no-show?
                   </p>
-                  <p className="mt-1 text-xs text-danger-700">
+                  <p className="mt-1 text-label-sm text-on-error-container/80">
                     This will remove the patient from the active queue.
                   </p>
                   <div className="mt-3 flex gap-3">
@@ -137,7 +147,7 @@ export function CurrentPatientPanel({
           )}
 
           {currentPatient.status === "IN_CONSULTATION" && (
-            <p className="rounded-lg bg-gray-50 p-3 text-center text-sm text-gray-600">
+            <p className="rounded-xl bg-surface-container p-3 text-center text-body-sm text-on-surface-variant">
               Consultation in progress - managed from the doctor dashboard.
             </p>
           )}
@@ -150,5 +160,18 @@ export function CurrentPatientPanel({
         )}
       </div>
     </section>
+  );
+}
+
+function PanelHeader() {
+  return (
+    <div className="border-b border-outline-variant px-6 py-4">
+      <h2
+        id="current-patient-heading"
+        className="text-headline-sm text-on-surface"
+      >
+        Current Patient
+      </h2>
+    </div>
   );
 }

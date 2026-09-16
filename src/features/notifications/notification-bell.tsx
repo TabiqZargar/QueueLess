@@ -27,13 +27,6 @@ function formatTime(iso: string): string {
   });
 }
 
-/**
- * Header notification bell (patient layout). The list of notifications is
- * fetched once on the server (the layout) and passed down; the client only
- * renders it and triggers the standard server actions, which are followed by a
- * `router.refresh()` so the page re-reads authoritative state — the same
- * refresh path used when a realtime queue event arrives.
- */
 export function NotificationBell({
   initialNotifications,
   initialUnreadCount,
@@ -104,27 +97,15 @@ export function NotificationBell({
         aria-label={`Notifications${unread > 0 ? `, ${unread} unread` : ""}`}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="relative rounded-lg border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 focus-ring"
+        className="relative inline-flex items-center justify-center rounded-xl p-2 text-on-surface-variant hover:bg-surface-container transition-colors focus-ring"
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.8}
-          stroke="currentColor"
-          className="h-5 w-5"
-          aria-hidden="true"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
-          />
-        </svg>
+        <span className="material-symbols-outlined text-xl" aria-hidden="true">
+          notifications
+        </span>
         {unread > 0 && (
           <span
             aria-hidden="true"
-            className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-600 px-1 text-[10px] font-bold text-white"
+            className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-danger-600 px-1 text-[10px] font-bold text-white"
           >
             {unread > 9 ? "9+" : unread}
           </span>
@@ -136,10 +117,10 @@ export function NotificationBell({
           ref={panelRef}
           role="dialog"
           aria-label="Notifications"
-          className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-lg"
+          className="absolute right-0 z-20 mt-2 w-80 overflow-hidden rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg"
         >
-          <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-            <h2 className="text-sm font-semibold text-gray-900">
+          <div className="flex items-center justify-between border-b border-outline-variant px-4 py-3">
+            <h2 className="text-sm font-semibold text-on-surface">
               Notifications
             </h2>
             {unread > 0 && (
@@ -156,28 +137,28 @@ export function NotificationBell({
 
           <div className="max-h-80 overflow-y-auto">
             {initialNotifications.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-gray-500">
+              <p className="px-4 py-8 text-center text-sm text-on-surface-variant">
                 No notifications yet.
               </p>
             ) : (
-              <ul className="divide-y divide-gray-100">
+              <ul className="divide-y divide-outline-variant">
                 {initialNotifications.map((n) => (
                   <li key={n.id} className="flex items-start gap-3 px-4 py-3">
                     <div className="min-w-0 flex-1">
                       <p
                         className={
                           n.readAt
-                            ? "text-sm font-medium text-gray-600"
-                            : "text-sm font-semibold text-gray-900"
+                            ? "text-sm font-medium text-on-surface-variant"
+                            : "text-sm font-semibold text-on-surface"
                         }
                       >
                         {n.title}
                       </p>
-                      <p className="mt-0.5 text-xs text-gray-600">
+                      <p className="mt-0.5 text-xs text-on-surface-variant">
                         {n.message}
                       </p>
                       <p
-                        className="mt-1 text-[11px] text-gray-400"
+                        className="mt-1 text-[11px] text-on-surface-variant/60"
                         title={formatTime(n.createdAt)}
                       >
                         {timeAgo(n.createdAt)}
@@ -196,7 +177,7 @@ export function NotificationBell({
                     ) : (
                       <span
                         aria-label="Read"
-                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-gray-300"
+                        className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-outline"
                       />
                     )}
                   </li>

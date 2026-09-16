@@ -21,49 +21,49 @@ export function UpcomingPatients({
 
   return (
     <section
-      className="rounded-lg border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
       aria-labelledby="doctor-upcoming-heading"
     >
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-outline-variant px-6 py-4">
         <h2
           id="doctor-upcoming-heading"
-          className="text-lg font-semibold text-gray-900"
+          className="text-headline-sm text-on-surface"
         >
           Up Next
         </h2>
       </div>
 
       {!listActive ? (
-        <div className="px-6 py-8 text-center text-sm text-gray-500">
+        <div className="px-6 py-8 text-center text-body-sm text-on-surface-variant">
           <p>The queue is no longer active.</p>
         </div>
       ) : upcoming.length === 0 ? (
         <div className="px-6 py-8 text-center">
-          <p className="text-sm text-gray-500">No patients are currently waiting.</p>
-          <p className="mt-1 text-xs text-gray-400">
+          <p className="text-body-sm text-on-surface-variant">
+            No patients are currently waiting.
+          </p>
+          <p className="mt-1 text-label-sm text-on-surface-variant/70">
             The next patient will appear here once staff call them.
           </p>
         </div>
       ) : (
-        <ol className="list-none divide-y divide-gray-100">
+        <ol className="list-none divide-y divide-outline-variant">
           {upcoming.map((entry, index) => (
             <li
               key={entry.entryId}
               className="flex items-center justify-between gap-4 px-6 py-3"
             >
               <div className="flex items-center gap-4">
-                <span className="w-8 text-center text-sm text-gray-400">
+                <span className="w-8 text-center text-label-sm text-on-surface-variant/70">
                   {index + 1}
                 </span>
-                <span className="text-sm font-semibold text-gray-900">
+                <span className="text-body-md font-semibold text-on-surface">
                   {formatQueueToken(entry.tokenNumber)}
                 </span>
               </div>
-              <div className="flex items-center gap-4 text-sm text-gray-600">
+              <div className="flex items-center gap-4 text-body-sm text-on-surface-variant">
                 <span>Position {entry.position}</span>
-                <span className="text-gray-500">
-                  {formatWaitTime(entry.estimatedWaitMinutes)}
-                </span>
+                <span>{formatWaitTime(entry.estimatedWaitMinutes)}</span>
               </div>
             </li>
           ))}

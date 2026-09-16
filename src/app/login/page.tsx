@@ -1,4 +1,5 @@
 import { LoginForm } from "./login-form";
+import { BrandLogo } from "@/components/brand-logo";
 
 export const dynamic = "force-dynamic";
 
@@ -12,20 +13,27 @@ export default function LoginPage({
     typeof rawNext === "string" && rawNext.startsWith("/") ? rawNext : undefined;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900">Sign in to QueueLess</h1>
-          <p className="mt-2 text-gray-600">
-            Choose a development role to continue. This is a mock sign-in for
-            development only.
-          </p>
-        </div>
-
-        <LoginForm next={next} />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-surface-container-low px-4">
+      <div className="flex flex-col items-center">
+        <BrandLogo />
       </div>
-      <p className="mt-8 text-xs text-gray-400">
-        Development build - no real user accounts are created.
+      <div className="mt-8 w-full max-w-md">
+        <div className="rounded-2xl border border-outline-variant bg-surface-container-lowest p-8 shadow-sm">
+          <div className="text-center">
+            <h1 className="text-headline-lg text-on-surface">
+              Sign in to QueueLess
+            </h1>
+            <p className="mt-2 text-body-md text-on-surface-variant">
+              Choose a development role to continue. This is a mock sign-in for
+              development only.
+            </p>
+          </div>
+
+          <LoginForm next={next} />
+        </div>
+      </div>
+      <p className="mt-8 text-label-sm text-on-surface-variant/70">
+        Development build — no real user accounts are created.
       </p>
     </div>
   );

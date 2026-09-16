@@ -67,13 +67,13 @@ export function QueueControlsCard({
 
   return (
     <section
-      className="rounded-lg border border-gray-200 bg-white shadow-sm"
+      className="rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm"
       aria-labelledby="queue-controls-heading"
     >
-      <div className="border-b border-gray-200 px-6 py-4">
+      <div className="border-b border-outline-variant px-6 py-4">
         <h2
           id="queue-controls-heading"
-          className="text-lg font-semibold text-gray-900"
+          className="text-headline-sm text-on-surface"
         >
           Queue Controls
         </h2>
@@ -81,11 +81,11 @@ export function QueueControlsCard({
 
       <div className="space-y-4 px-6 py-4">
         {isPaused && (
-          <div className="rounded-lg border border-warning-200 bg-warning-50 px-4 py-3">
-            <p className="text-sm font-medium text-warning-800">
+          <div className="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3">
+            <p className="text-body-sm font-medium text-warning-800">
               Queue is currently paused.
             </p>
-            <p className="mt-1 text-sm text-warning-700">
+            <p className="mt-1 text-body-sm text-warning-700">
               New patients cannot join until the queue is resumed.
             </p>
           </div>
@@ -110,13 +110,13 @@ export function QueueControlsCard({
               {pending === "resume" ? "Resuming..." : "Resume Queue"}
             </Button>
           ) : (
-            <p className="text-sm text-gray-500">
+            <p className="text-body-sm text-on-surface-variant">
               This queue is not active and cannot be modified.
             </p>
           )}
         </div>
 
-        <div className="border-t border-gray-100 pt-4">
+        <div className="border-t border-outline-variant pt-4">
           <Button
             variant="secondary"
             className="w-full"
@@ -135,13 +135,13 @@ export function QueueControlsCard({
             <form
               id="walk-in-form"
               onSubmit={handleWalkIn}
-              className="mt-4 space-y-3 rounded-lg border border-gray-200 bg-gray-50 p-4"
+              className="mt-4 space-y-3 rounded-xl border border-outline-variant bg-surface-container p-4"
               aria-label="Add walk-in patient"
             >
               <div>
                 <label
                   htmlFor="walk-in-name"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-label-md font-medium text-on-surface"
                 >
                   Patient name
                 </label>
@@ -151,23 +151,23 @@ export function QueueControlsCard({
                   required
                   value={walkInName}
                   onChange={(e) => setWalkInName(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="mt-1 block w-full rounded-xl border border-outline bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="Full name"
                 />
               </div>
               <div>
                 <label
                   htmlFor="walk-in-phone"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-label-md font-medium text-on-surface"
                 >
-                  Phone <span className="text-gray-400">(optional)</span>
+                  Phone <span className="text-on-surface-variant/70">(optional)</span>
                 </label>
                 <input
                   id="walk-in-phone"
                   type="tel"
                   value={walkInPhone}
                   onChange={(e) => setWalkInPhone(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="mt-1 block w-full rounded-xl border border-outline bg-white px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                   placeholder="+92 300 0000000"
                 />
               </div>

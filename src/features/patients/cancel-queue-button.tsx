@@ -41,13 +41,13 @@ export function CancelQueueButton() {
   if (confirming) {
     return (
       <div
-        className="mt-6 rounded-lg border border-danger-200 bg-danger-50 p-4"
+        className="mt-6 rounded-xl border border-danger-200 bg-error-container p-4"
         data-testid="cancel-confirm"
       >
-        <p className="text-sm font-medium text-danger-800">
+        <p className="text-sm font-medium text-on-error-container">
           Are you sure you want to cancel?
         </p>
-        <p className="mt-1 text-sm text-danger-700">
+        <p className="mt-1 text-sm text-on-error-container/80">
           You will lose your current position in the queue.
         </p>
         <div className="mt-4 flex gap-3">
@@ -68,7 +68,7 @@ export function CancelQueueButton() {
           </Button>
         </div>
         {error && (
-          <p className="mt-3 text-sm text-danger-700" role="alert">
+          <p className="mt-3 text-sm text-on-error-container" role="alert">
             {error}
           </p>
         )}
@@ -86,7 +86,7 @@ export function CancelQueueButton() {
         Cancel My Queue Entry
       </Button>
       {error && (
-        <p className="mt-3 text-sm text-danger-700" role="alert">
+        <p className="mt-3 text-sm text-on-error-container" role="alert">
           {error}
         </p>
       )}

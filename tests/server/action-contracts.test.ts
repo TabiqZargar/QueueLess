@@ -255,13 +255,14 @@ describe("domain error mapping through real actions", () => {
 });
 
 describe("patient cancel contract", () => {
-  it("rejects cancellation when there is no stored entry", async () => {
+  it("falls back to the patient's active registration when the cookie is missing", async () => {
+    // patient-1 owns WAITING entries in the mock repository. Even without the
+    // queueless_entry cookie, the action must cancel their own active entry
+    // found through the data layer (production regression fix).
     setSession("patient-1");
     const result = await patientActions.cancelQueueEntryAction();
-    expect(result.success).toBe(false);
-    if (!result.success) {
-      expect(result.code).toBe("ENTRY_NOT_FOUND");
-    }
+    expect(result.success).toBe(true);
+    expect(cookieStore.has(ENTRY_COOKIE_NAME)).toBe(false);
   });
 
   it("denies cancelling another patient's entry with FORBIDDEN", async () => {

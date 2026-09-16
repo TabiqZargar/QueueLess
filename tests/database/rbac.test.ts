@@ -177,6 +177,36 @@ describe.skipIf(
     }
   }, 30_000);
 
+  it("cancels the patient's active entry via database fallback without a cookie", async () => {
+    const entryId = `entry-rbac-fallback-${randomUUID()}`;
+    const queue = await createIsolatedQueue({
+      existingPatientIds: ["patient-1"],
+      entries: [
+        {
+          id: entryId,
+          patientId: "patient-1",
+          tokenNumber: 1,
+          status: "WAITING",
+        },
+      ],
+    });
+
+    try {
+      // Signed in as patient-1, but no entry cookie was ever set (the patient
+      // was auto-redirected to the status page rather than joining fresh).
+      setSession("patient-1");
+      expect(cookieStore.has(ENTRY_COOKIE_NAME)).toBe(false);
+
+      const result = await patientActions.cancelQueueEntryAction();
+      expect(result.success).toBe(true);
+      expect((await dbQueueService.getQueueEntry(entryId))?.status).toBe(
+        "CANCELLED"
+      );
+    } finally {
+      await queue.cleanup();
+    }
+  }, 30_000);
+
   it("refuses cancellation before sign-in", async () => {
     const entryId = `entry-rbac-${randomUUID()}`;
     const queue = await createIsolatedQueue({

@@ -131,7 +131,16 @@ export async function cancelQueueEntryAction(): Promise<ActionResult> {
   try {
     const user = await requireRole(USER_ROLES.PATIENT);
     const stored = getStoredEntryCookie();
-    if (!stored) {
+
+    let entryId: string | null = stored?.entryId ?? null;
+
+    if (!entryId) {
+      const active = await queueService.getActiveRegistrationsForPatient(user.id);
+      const waiting = active.find((e) => e.status === "WAITING");
+      entryId = waiting?.id ?? null;
+    }
+
+    if (!entryId) {
       return {
         success: false,
         code: "ENTRY_NOT_FOUND",
@@ -139,7 +148,7 @@ export async function cancelQueueEntryAction(): Promise<ActionResult> {
       };
     }
 
-    const entry = await queueService.getQueueEntry(stored.entryId);
+    const entry = await queueService.getQueueEntry(entryId);
     if (!entry) {
       return {
         success: false,
@@ -150,7 +159,7 @@ export async function cancelQueueEntryAction(): Promise<ActionResult> {
 
     ensureOwnership(user.id, entry.patientId);
 
-    await queueService.cancelQueueEntry(stored.entryId);
+    await queueService.cancelQueueEntry(entryId);
     cookies().delete(ENTRY_COOKIE_NAME);
     return { success: true };
   } catch (err) {

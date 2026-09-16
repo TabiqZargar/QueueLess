@@ -3,20 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-  }
-
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-  }
-}
-
-@layer base {
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply bg-surface-container-low text-on-surface antialiased selection:bg-primary-200 selection:text-primary-900;
   }
 }
 
@@ -24,10 +12,67 @@
   .container {
     @apply mx-auto max-w-7xl px-4 sm:px-6 lg:px-8;
   }
+
+  .focus-ring {
+    @apply focus:ring-2 focus:ring-primary-600 focus:ring-offset-2 focus:outline-none;
+  }
 }
 
 @layer utilities {
-  .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  .text-display-ticket {
+    font-size: 4.25rem;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-weight: 800;
+  }
+  .text-display-ticket-mobile {
+    font-size: 2.75rem;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+  .text-headline-xl {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+    letter-spacing: -0.02em;
+    font-weight: 800;
+  }
+  .text-headline-lg {
+    font-size: 1.5rem;
+    line-height: 2rem;
+    font-weight: 800;
+  }
+  .text-headline-md {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+    font-weight: 700;
+  }
+  .text-headline-sm {
+    font-size: 1.125rem;
+    line-height: 1.5rem;
+    font-weight: 600;
+  }
+  .text-body-lg {
+    font-size: 1rem;
+    line-height: 1.625rem;
+  }
+  .text-body-md {
+    font-size: 0.9375rem;
+    line-height: 1.5rem;
+  }
+  .text-label-eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+  .text-label-sm {
+    font-size: 0.75rem;
+    line-height: 1.125rem;
+  }
+  .text-label-md {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 }
