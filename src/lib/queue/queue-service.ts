@@ -6,8 +6,14 @@ import {
   QueuePosition,
   EntryType,
   QueueEntryStatus,
+  Patient,
 } from "@/types";
-import { QueueRepository, QueueStatistics, QueueWithDetails } from "./repository";
+import {
+  QueueRepository,
+  QueueStatistics,
+  QueueWithDetails,
+  UpsertPatientInput,
+} from "./repository";
 import {
   CannotCallNextPatientError,
   InvalidTransitionError,
@@ -103,6 +109,16 @@ export class QueueService {
 
   async getQueueEntries(queueId: string): Promise<QueueEntry[]> {
     return this.repository.getQueueEntries(queueId);
+  }
+
+  /**
+   * Persists a patient registration through the repository so the queue read
+   * models (staff/doctor dashboards) surface the registered information from
+   * the durable data layer. Creating/updating the patient is idempotent per
+   * id (see {@link QueueRepository.upsertPatient}).
+   */
+  async upsertPatient(input: UpsertPatientInput): Promise<Patient> {
+    return this.repository.upsertPatient(input);
   }
 
   async getQueueStats(queueId: string): Promise<QueueStatistics> {

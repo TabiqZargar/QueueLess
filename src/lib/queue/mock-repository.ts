@@ -10,6 +10,7 @@ import {
   QueueRepository,
   CreateQueueEntryInput,
   UpdateQueueEntryInput,
+  UpsertPatientInput,
   QueueStatistics,
   QueueWithDetails,
   NON_TERMINAL_ENTRY_STATUSES,
@@ -154,6 +155,32 @@ export class MockQueueRepository implements QueueRepository {
 
   async getPatient(patientId: string): Promise<Patient | null> {
     return this.patients.find((p) => p.id === patientId) ?? null;
+  }
+
+  async upsertPatient(input: UpsertPatientInput): Promise<Patient> {
+    const existing = this.patients.find((p) => p.id === input.id);
+    if (existing) {
+      const updated: Patient = {
+        ...existing,
+        name: input.name,
+        phone: input.phone,
+        updatedAt: new Date(),
+      };
+      const index = this.patients.findIndex((p) => p.id === input.id);
+      this.patients[index] = updated;
+      return updated;
+    }
+
+    const created: Patient = {
+      id: input.id,
+      name: input.name,
+      phone: input.phone,
+      clinicId: input.clinicId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.patients.push(created);
+    return created;
   }
 
   async getQueueStatistics(queueId: string): Promise<QueueStatistics> {

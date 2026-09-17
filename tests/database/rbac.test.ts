@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { db } from "../../prisma/db";
 import { QueueService } from "@/lib/queue/queue-service";
 import { PrismaQueueRepository } from "@/lib/queue/prisma-repository";
 import { NotificationService } from "@/lib/notifications/service";
@@ -259,6 +260,14 @@ describe.skipIf(
       });
     } finally {
       await queue.cleanup();
+      // The action runs the real upsert against the seeded patient row used by
+      // the (fixed) PATIENT mock user; restore the seed contact details so
+      // repeated runs never drift the reference data.
+      await db.orm.public.Patient.where({ id: "patient-1" }).update({
+        name: "Muhammad Hassan",
+        phone: "+92-300-1234567",
+        clinicId: "clinic-1",
+      });
     }
   }, 30_000);
 

@@ -12,6 +12,7 @@ import {
 } from "@/lib/notifications/event-handler";
 import { InAppNotificationDelivery } from "@/lib/notifications/delivery";
 import { InMemoryRealtimeTransport } from "@/lib/realtime/in-memory-transport";
+import { PostgresRealtimeTransport } from "@/lib/realtime/postgres-transport";
 import { createQueuePublisher } from "@/lib/realtime/publisher";
 
 /**
@@ -217,4 +218,36 @@ export function buildPostgresStack() {
  */
 export function buildLeanQueueService(): QueueService {
   return new QueueService(new PrismaQueueRepository());
+}
+
+/**
+ * Full production-shaped wiring over the real durable transport (PostgreSQL
+ * `queueRealtimeEvent` rows + cursor replay), plus notifications. Mirrors the
+ * moment a patient joins in production when `DATABASE_URL` is configured.
+ */
+export function buildPostgresDurableStack() {
+  const queueRepository = new PrismaQueueRepository();
+  const notificationRepository = new PrismaNotificationRepository();
+  const notificationService = new NotificationService(notificationRepository);
+  const transport = new PostgresRealtimeTransport();
+  const publisher = createQueuePublisher(transport);
+
+  let serviceRef!: QueueService;
+  const policy = new NotificationPolicy({ getQueueService: () => serviceRef });
+  const handler = new SafeNotificationHandler(
+    new QueueEventNotificationHandler(
+      policy,
+      notificationService,
+      new InAppNotificationDelivery()
+    )
+  );
+  serviceRef = new QueueService(queueRepository, publisher, handler);
+
+  return {
+    queueService: serviceRef,
+    queueRepository,
+    notificationService,
+    notificationRepository,
+    transport,
+  };
 }
