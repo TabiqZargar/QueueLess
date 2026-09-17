@@ -1,9 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { buildPostgresStack, createIsolatedQueue } from "./test-context";
+import {
+  buildPostgresDurableStack,
+  buildPostgresStack,
+  createIsolatedQueue,
+} from "./test-context";
 import { getPatientStatus } from "@/features/patients/get-patient-status";
 import { queueTopic } from "@/lib/realtime/topics";
 import { QueueRealtimeEvent } from "@/lib/realtime/events";
+import { PostgresRealtimeTransport } from "@/lib/realtime/postgres-transport";
 
 describe.skipIf(
   !process.env.DATABASE_URL || process.env.RUN_DATABASE_TESTS !== "1"
@@ -209,6 +214,31 @@ describe.skipIf(
       });
     } finally {
       subscription.unsubscribe();
+      await queue.cleanup();
+    }
+  }, 30_000);
+
+  it("persists a durable realtime event with a monotonic cursor when a patient joins", async () => {
+    const { queueService } = buildPostgresDurableStack();
+    const patientId = `realtime-join-${randomUUID()}`;
+    const queue = await createIsolatedQueue({ patientIds: [patientId] });
+
+    try {
+      await queueService.joinQueue({ queueId: queue.queueId, patientId });
+
+      // A brand-new transport reads the exact event a polling dashboard would
+      // receive after a reload: same queue, coarse type, monotonic sequence.
+      const replayed = await new PostgresRealtimeTransport().readEvents(
+        queueTopic(queue.queueId),
+        0
+      );
+      expect(replayed).toHaveLength(1);
+      expect(replayed[0]).toMatchObject({
+        type: "QUEUE_UPDATED",
+        queueId: queue.queueId,
+      });
+      expect(replayed[0].sequence).toBeGreaterThan(0);
+    } finally {
       await queue.cleanup();
     }
   }, 30_000);

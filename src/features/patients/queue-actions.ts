@@ -3,7 +3,6 @@
 import { cookies } from "next/headers";
 import { joinQueueSchema } from "@/lib/validation/patient";
 import { queueService } from "@/lib/queue/instance";
-import { getPatientStore } from "./patient-store";
 import {
   buildEntryCookieValue,
   ENTRY_COOKIE_NAME,
@@ -76,8 +75,8 @@ export async function joinQueueAction(
       };
     }
 
-    const patient = getPatientStore().getOrCreatePatientForUser({
-      userId: user.id,
+    const patient = await queueService.upsertPatient({
+      id: user.id,
       name,
       phone,
       clinicId: queue.clinicId,

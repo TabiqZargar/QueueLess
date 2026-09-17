@@ -13,6 +13,7 @@ import {
   QueueRepository,
   CreateQueueEntryInput,
   UpdateQueueEntryInput,
+  UpsertPatientInput,
   QueueStatistics,
   QueueWithDetails,
   NON_TERMINAL_ENTRY_STATUSES,
@@ -302,6 +303,35 @@ export class PrismaQueueRepository implements QueueRepository {
     const patient = await db.orm.public.Patient.where({ id: patientId }).first();
 
     return patient ? this.toPatient(patient) : null;
+  }
+
+  async upsertPatient(input: UpsertPatientInput): Promise<Patient> {
+    const existing = await db.orm.public.Patient.where({ id: input.id }).first();
+
+    if (existing) {
+      // personal details only: a patient must never be silently moved between
+      // clinics when they re-register through a queue join.
+      const updated = await db.orm.public.Patient.where({ id: input.id }).update(
+        {
+          name: input.name,
+          phone: input.phone,
+          updatedAt: new Date().toISOString(),
+        }
+      );
+      return this.toPatient(updated);
+    }
+
+    const now = new Date().toISOString();
+    const created = await db.orm.public.Patient.create({
+      id: input.id,
+      name: input.name,
+      phone: input.phone,
+      email: null,
+      clinicId: input.clinicId,
+      createdAt: now,
+      updatedAt: now,
+    });
+    return this.toPatient(created);
   }
 
   async getQueueStatistics(

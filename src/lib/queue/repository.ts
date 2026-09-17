@@ -50,6 +50,18 @@ export interface UpdateQueueEntryInput {
   cancelledAt?: Date;
 }
 
+/**
+ * Registration details persisted against a Patient record. The id identifies
+ * the patient across join reads (for authenticated patients it matches the
+ * user id so ownership checks stay intact); walk-ins receive a generated id.
+ */
+export interface UpsertPatientInput {
+  id: string;
+  name: string;
+  phone: string;
+  clinicId: string;
+}
+
 export interface QueueRepository {
   getQueue(queueId: string): Promise<Queue | null>;
 
@@ -77,6 +89,15 @@ export interface QueueRepository {
   getDoctor(doctorId: string): Promise<Doctor | null>;
 
   getPatient(patientId: string): Promise<Patient | null>;
+
+  /**
+   * Creates or updates the patient record for a registration. Registration is
+   * the moment patient-entered details become durable: a newly shared name /
+   * phone/clinic replaces the previous record for the same id so the queue
+   * read models (staff/doctor dashboards) consistently surface the
+   * information the patient actually registered with.
+   */
+  upsertPatient(input: UpsertPatientInput): Promise<Patient>;
 
   getQueueStatistics(queueId: string): Promise<QueueStatistics>;
 

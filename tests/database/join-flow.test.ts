@@ -168,6 +168,39 @@ describe.skipIf(
   );
 
   it(
+    "resuming a paused queue re-opens joins and persists the status transition",
+    { timeout: 60_000 },
+    async () => {
+      const patientId = `join-resume-${crypto.randomUUID()}`;
+      const ctx = await createIsolatedQueue({ patientIds: [patientId] });
+
+      try {
+        const service = buildLeanQueueService();
+        await service.pauseQueue(ctx.queueId);
+
+        const resumed = await service.resumeQueue(ctx.queueId);
+        expect(resumed.status).toBe("ACTIVE");
+
+        // The same queue accepts joins again once resumed.
+        const joined = await service.joinQueue({
+          queueId: ctx.queueId,
+          patientId,
+        });
+        expect(joined.entry.status).toBe("WAITING");
+
+        const eventTypes = (await service.getQueueEvents(ctx.queueId)).map(
+          (e) => e.eventType
+        );
+        expect(eventTypes).toContain("QUEUE_PAUSED");
+        expect(eventTypes).toContain("QUEUE_RESUMED");
+        expect(eventTypes.filter((t) => t === "QUEUE_RESUMED")).toHaveLength(1);
+      } finally {
+        await ctx.cleanup();
+      }
+    }
+  );
+
+  it(
     "stats for a joinable queue are calculated from real waiting entries",
     { timeout: 60_000 },
     async () => {

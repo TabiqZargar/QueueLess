@@ -1,7 +1,6 @@
 "use server";
 
 import { queueService } from "@/lib/queue/instance";
-import { getPatientStore } from "@/features/patients/patient-store";
 import { addWalkInSchema } from "@/lib/validation/staff";
 import { entryIdSchema, queueIdSchema } from "@/lib/validation/identifiers";
 import { formatQueueToken } from "@/lib/utils";
@@ -123,7 +122,8 @@ export async function addWalkInAction(input: {
       };
     }
 
-    const patient = getPatientStore().registerPatient({
+    const patient = await queueService.upsertPatient({
+      id: `patient-${crypto.randomUUID()}`,
       name: parsed.data.name,
       phone: parsed.data.phone ?? "",
       clinicId: queue.clinicId,
