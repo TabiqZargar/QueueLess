@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { QueueService } from "@/lib/queue/queue-service";
 import { MockQueueRepository } from "@/lib/queue/mock-repository";
+import { PrismaQueueRepository } from "@/lib/queue/prisma-repository";
 import { NON_TERMINAL_ENTRY_STATUSES } from "@/lib/queue/repository";
 import {
   getActiveRegistrationsForUser,
@@ -48,6 +49,10 @@ describe("getActiveRegistrationsForPatient (mock)", () => {
 });
 
 describe("patient active-registration helper", () => {
+  it("requires the Prisma-backed repository to expose active-registration queries", () => {
+    expect(typeof PrismaQueueRepository.prototype.getActiveEntriesForPatient).toBe("function");
+  });
+
   it("resolves the most recent active registration to a status path", async () => {
     const service = createService();
     const current = await getCurrentPatientRegistration("patient-1", service);

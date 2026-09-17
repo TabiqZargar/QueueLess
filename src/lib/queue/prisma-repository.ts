@@ -52,7 +52,7 @@ export class PrismaQueueRepository implements QueueRepository {
       .orderBy((queue) => queue.updatedAt.asc())
       .all();
 
-    return Promise.all(queues.map((queue) => this.toQueueWithDetails(queue)));
+    return queues.map((queue) => this.toQueueWithDetails(queue));
   }
 
   async getQueueEntries(queueId: string): Promise<QueueEntry[]> {
@@ -309,15 +309,11 @@ export class PrismaQueueRepository implements QueueRepository {
     const existing = await db.orm.public.Patient.where({ id: input.id }).first();
 
     if (existing) {
-      // personal details only: a patient must never be silently moved between
-      // clinics when they re-register through a queue join.
-      const updated = await db.orm.public.Patient.where({ id: input.id }).update(
-        {
-          name: input.name,
-          phone: input.phone,
-          updatedAt: new Date().toISOString(),
-        }
-      );
+      const updated = await db.orm.public.Patient.where({ id: input.id }).update({
+        name: input.name,
+        phone: input.phone,
+        updatedAt: new Date().toISOString(),
+      });
       return this.toPatient(updated);
     }
 
@@ -331,6 +327,7 @@ export class PrismaQueueRepository implements QueueRepository {
       createdAt: now,
       updatedAt: now,
     });
+
     return this.toPatient(created);
   }
 
