@@ -444,20 +444,12 @@ export class PrismaQueueRepository implements QueueRepository {
     };
   }
 
-  private async toQueueWithDetails(value: any): Promise<QueueWithDetails> {
-    const queue = this.toQueue(value);
-
-    const [doctorRow, departmentRow, clinicRow] = await Promise.all([
-      db.orm.public.Doctor.where({ id: queue.doctorId }).first(),
-      db.orm.public.Department.where({ id: queue.departmentId }).first(),
-      db.orm.public.Clinic.where({ id: queue.clinicId }).first(),
-    ]);
-
+  private toQueueWithDetails(value: any): QueueWithDetails {
     return {
-      ...queue,
-      doctor: doctorRow ? this.toDoctor(doctorRow) : undefined,
-      departmentName: departmentRow?.name,
-      clinicName: clinicRow?.name,
+      ...this.toQueue(value),
+      doctor: undefined,
+      departmentName: undefined,
+      clinicName: undefined,
     };
   }
 
